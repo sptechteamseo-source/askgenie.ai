@@ -1,0 +1,460 @@
+@import "tailwindcss";
+
+/* =========================================================
+   ATG Design System — Fonts
+   ========================================================= */
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/SpaceGrotesk-VariableFont_wght.ttf") format("truetype-variations"),
+       url("/fonts/SpaceGrotesk-VariableFont_wght.ttf") format("truetype");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-VariableFont_opsz,wght.ttf") format("truetype-variations"),
+       url("/fonts/Inter-VariableFont_opsz,wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================================================
+   Design Tokens — Light Mode (default)
+   ========================================================= */
+:root {
+  color-scheme: light;
+
+  /* Foundation */
+  --primary:    #191A1F;
+  --secondary:  #404040;
+  --tertiary:   #FFFFFF;
+  --neutral:    #F4F4F5;
+
+  /* Primary scale */
+  --primary-50:  #F2F2F3;
+  --primary-100: #DCDCDE;
+  --primary-200: #B9B9BD;
+  --primary-300: #96979D;
+  --primary-400: #73747C;
+  --primary-500: #50515B;
+  --primary-600: #3D3E47;
+  --primary-700: #2B2C33;
+  --primary-800: #21222A;
+  --primary-900: #191A1F;
+
+  /* Neutral ramp */
+  --neutral-50:  #FAFAFB;
+  --neutral-100: #F4F4F5;
+  --neutral-200: #E4E4E7;
+  --neutral-300: #D1D1D6;
+  --neutral-400: #A1A1AA;
+  --neutral-500: #71717A;
+  --neutral-600: #52525B;
+  --neutral-700: #3F3F46;
+  --neutral-800: #27272A;
+  --neutral-900: #18181B;
+
+  /* Surfaces */
+  --bg:          var(--neutral);
+  --bg-elevated: var(--tertiary);
+  --bg-sunken:   var(--neutral-200);
+
+  /* Foreground */
+  --fg:          var(--primary);
+  --fg-muted:    var(--secondary);
+  --fg-subtle:   var(--neutral-500);
+  --fg-inverted: var(--tertiary);
+
+  /* Borders */
+  --border:        var(--neutral-200);
+  --border-strong: var(--primary);
+
+  /* Actions */
+  --action:              var(--primary);
+  --action-fg:           var(--tertiary);
+  --action-hover:        var(--primary-700);
+  --action-press:        var(--primary-800);
+  --action-secondary:    var(--neutral-100);
+  --action-secondary-fg: var(--primary);
+
+  /* Danger */
+  --danger:    #E5675C;
+  --danger-fg: #FFFFFF;
+
+  /* Accent */
+  --accent:      #4A6FE6;
+  --accent-soft: #E4ECFD;
+  --accent-fg:   #FFFFFF;
+  --accent-glow: color-mix(in oklab, var(--accent) 25%, transparent);
+
+  /* Typography */
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-label:   "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Type scale */
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  28px;
+  --text-3xl:  36px;
+  --text-4xl:  48px;
+  --text-5xl:  64px;
+  --text-6xl:  88px;
+
+  /* Spacing */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radii */
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-none: none;
+  --shadow-sm:   0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:   0 4px 12px rgba(0,0,0,.08);
+
+  /* Motion */
+  --ease:     cubic-bezier(.2, 0, 0, 1);
+  --dur-fast: 150ms;
+  --dur:      220ms;
+  --dur-slow: 400ms;
+
+  /* Layout */
+  --section-pad-y: clamp(80px, 9vw, 140px);
+  --gutter:        clamp(20px, 4vw, 48px);
+  --max-w:         1240px;
+}
+
+/* =========================================================
+   Design Tokens — Dark Mode
+   ========================================================= */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --primary:    #FFFFFF;
+  --secondary:  #191A1F;
+  --tertiary:   #000000;
+  --neutral:    #191A1F;
+
+  --primary-50:  #0E0E12;
+  --primary-100: #1A1A20;
+  --primary-200: #2B2C33;
+  --primary-300: #3D3E47;
+  --primary-400: #50515B;
+  --primary-500: #73747C;
+  --primary-600: #96979D;
+  --primary-700: #B9B9BD;
+  --primary-800: #DCDCDE;
+  --primary-900: #FFFFFF;
+
+  --neutral-50:  #0E0E12;
+  --neutral-100: #18181B;
+  --neutral-200: #23252B;
+  --neutral-300: #2B2C33;
+  --neutral-400: #3F3F46;
+  --neutral-500: #71717A;
+  --neutral-600: #A1A1AA;
+  --neutral-700: #D1D1D6;
+  --neutral-800: #E4E4E7;
+  --neutral-900: #FAFAFB;
+
+  --bg:          #191A1F;
+  --bg-elevated: #23252B;
+  --bg-sunken:   #0E0E12;
+
+  --fg:          #FFFFFF;
+  --fg-muted:    #B9B9BD;
+  --fg-subtle:   #73747C;
+  --fg-inverted: #191A1F;
+
+  --border:        #2B2C33;
+  --border-strong: #FFFFFF;
+
+  --action:              #FFFFFF;
+  --action-fg:           #191A1F;
+  --action-hover:        #B9B9BD;
+  --action-press:        #96979D;
+  --action-secondary:    #2B2C33;
+  --action-secondary-fg: #FFFFFF;
+
+  --danger:    #E89B92;
+  --danger-fg: #2B0E0A;
+
+  --accent:      #7AA8FB;
+  --accent-soft: #15224A;
+  --accent-fg:   #08123A;
+  --accent-glow: color-mix(in oklab, var(--accent) 30%, transparent);
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-label:   "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* =========================================================
+   Base Reset
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background .35s var(--ease), color .35s var(--ease);
+  font-feature-settings: "ss01", "cv11";
+}
+
+img, svg { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; cursor: pointer; }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--fg);
+}
+h1 { font-size: var(--text-6xl); }
+h2 { font-size: var(--text-4xl); }
+h3 { font-size: var(--text-3xl); }
+h4 { font-size: var(--text-2xl); }
+h5 { font-size: var(--text-xl); }
+h6 { font-size: var(--text-lg); letter-spacing: -0.01em; }
+p { margin: 0; color: var(--fg); }
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+a:hover { opacity: 0.7; }
+
+/* =========================================================
+   Layout Primitives
+   ========================================================= */
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+section { padding: var(--section-pad-y) 0; position: relative; }
+
+.eyebrow {
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before {
+  content: "";
+  width: 24px; height: 1px;
+  background: currentColor;
+  opacity: .5;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.02;
+  margin-top: 16px;
+  text-wrap: balance;
+}
+.section-title em { font-style: normal; color: var(--accent); }
+
+.section-lede {
+  margin-top: 18px;
+  max-width: 640px;
+  font-size: clamp(16px, 1.4vw, 19px);
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14.5px;
+  letter-spacing: -0.005em;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: background var(--dur) var(--ease),
+              color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              transform var(--dur-fast) var(--ease),
+              opacity var(--dur-fast) var(--ease);
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:hover { opacity: inherit; }
+
+.btn-primary {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.btn-primary:hover { opacity: .9; }
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0 var(--accent-glow), 0 1px 0 rgba(0,0,0,.04);
+}
+.btn-accent:hover { box-shadow: 0 0 0 8px var(--accent-glow); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--bg-elevated); }
+
+.btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 10px; }
+.btn-lg { padding: 16px 22px; font-size: 15.5px; }
+
+/* =========================================================
+   Cards
+   ========================================================= */
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--dur) var(--ease),
+              background var(--dur) var(--ease);
+}
+.card:hover { border-color: var(--neutral-400); }
+
+/* =========================================================
+   Chip / Pill
+   ========================================================= */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 11px;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: var(--font-label);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+/* =========================================================
+   Utilities
+   ========================================================= */
+.dot-grid {
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.divider { height: 1px; background: var(--border); width: 100%; }
+.row { display: flex; align-items: center; }
+.gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; } .gap-6 { gap: 24px; }
+.muted { color: var(--fg-muted); }
+.subtle { color: var(--fg-subtle); }
+.tnum { font-variant-numeric: tabular-nums; }
+.center { display: flex; align-items: center; justify-content: center; }
+.mono { font-family: var(--font-mono); }
+
+/* =========================================================
+   Animations
+   ========================================================= */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.in-view { animation: fadeUp .8s var(--ease) both; }
+
+@keyframes blink { 50% { opacity: 0; } }
+.caret {
+  display: inline-block; width: 2px; height: 1.05em;
+  background: var(--accent); margin-left: 2px; vertical-align: -2px;
+  animation: blink 1.05s steps(2) infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee {
+  display: flex;
+  gap: 56px;
+  animation: marquee 40s linear infinite;
+  width: max-content;
+}
+.marquee-track {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* =========================================================
+   Cite / Highlight
+   ========================================================= */
+.cite {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+.cite sup { font-size: 9px; margin-left: 2px; }
+
+/* =========================================================
+   Scrollbar
+   ========================================================= */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* =========================================================
+   Icon button
+   ========================================================= */
+.icon-btn {
+  width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 9999px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.icon-btn:hover { color: var(--fg); background: var(--bg-elevated); }
