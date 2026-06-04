@@ -302,9 +302,14 @@ export default function AIForLegalDocumentsPage() {
                   <ul className="use-list">
                     {item.bullets.map((b, j) => <li key={j}>{b}</li>)}
                   </ul>
+                  {/*
                   <a className="use-link" href={item.link.href}>
                     {item.link.text} <ArrowRight size={14} />
-                  </a>
+                  </a>*/
+}
+<a className="use-link" href="#">
+  {item.link.text} <ArrowRight size={14} />
+</a>
                 </div>
                 <div className="use-visual" aria-hidden="true">
                   <div className="glow"></div>
