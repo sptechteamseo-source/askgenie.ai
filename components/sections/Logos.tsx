@@ -14,10 +14,15 @@ export default function Logos() {
           display: inline-flex; align-items: center; gap: 12px;
           color: var(--fg-subtle); font-family: var(--font-display); font-weight: 500;
           font-size: 18px; letter-spacing: -0.01em;
-          transition: color var(--dur) var(--ease);
+          transition: color var(--dur) var(--ease), transform .25s var(--ease);
+          padding: 0 24px;
         }
-        .logos-tile:hover { color: var(--fg); }
-        .logos-mark { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; }
+        .logos-tile:hover { color: var(--fg); transform: scale(1.06); }
+        .logos-mark {
+          width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+          transition: transform .3s var(--ease);
+        }
+        .logos-tile:hover .logos-mark { transform: rotate(-8deg) scale(1.15); }
         .logos-mark svg { width: 24px; height: 24px; }
       `}</style>
 

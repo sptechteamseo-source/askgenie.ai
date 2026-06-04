@@ -1,33 +1,34 @@
-﻿import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/rbac'
 import { z } from 'zod'
 
 const testimonialSchema = z.object({
   quote: z.string().min(1, 'Quote is required'),
-  authorName: z.string().min(1, 'Author name is required'),
-  authorRole: z.string().optional(),
+  authorname: z.string().min(1, 'Author name is required'),
+  authorrole: z.string().optional(),
   company: z.string().optional(),
   initials: z.string().max(3).optional(),
   seats: z.string().optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
+  status: z.enum(['draft', 'published', 'archived']).default('draft'),
   order: z.number().default(0),
 })
 
-// GET /api/testimonials â€” public endpoint, returns PUBLISHED by default
+// GET /api/testimonials — public endpoint, returns published by default
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl
-    const status = searchParams.get('status') ?? 'PUBLISHED'
+    const status = searchParams.get('status') ?? 'published'
     const all = searchParams.get('all') === 'true'
 
     const testimonials = await prisma.testimonial.findMany({
       where: all ? {} : { status: status as any },
-      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ order: 'asc' }, { createdat: 'desc' }],
     })
 
     return Response.json({ success: true, data: testimonials })
-  } catch {
+  } catch (error) {
+    console.error('[GET /api/testimonials]', error)
     return Response.json(
       { success: false, error: 'Failed to fetch testimonials' },
       { status: 500 }
@@ -62,4 +63,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

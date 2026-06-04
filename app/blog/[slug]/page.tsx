@@ -11,9 +11,9 @@ import { prisma }    from '@/lib/prisma'
 import BlogPostClient from './BlogPostClient'
 import type { SerializedBlog, RelatedPost, FaqItem } from '@/types'
 
-type BlogWithRelations = Prisma.BlogGetPayload<{
+type BlogWithRelations = Prisma.blogGetPayload<{
   include: {
-    author: { select: { id: true; name: true; image: true; bio: true; jobTitle: true; twitter: true; linkedin: true } }
+    author: { select: { id: true; name: true; image: true; bio: true; jobtitle: true; twitter: true; linkedin: true } }
     category: { select: { id: true; name: true; slug: true } }
     tags: { include: { tag: { select: { id: true; name: true; slug: true } } } }
   }
@@ -22,12 +22,12 @@ type BlogWithRelations = Prisma.BlogGetPayload<{
 // ── Cached DB fetch — runs ONCE even when both generateMetadata and the page call it ──
 const getBlog = cache(async (slug: string): Promise<BlogWithRelations | null> => {
   return await prisma.blog.findUnique({
-    where: { slug, status: 'PUBLISHED' },
+    where: { slug, status: 'published' },
     include: {
       author: {
         select: {
           id: true, name: true, image: true,
-          bio: true, jobTitle: true, twitter: true, linkedin: true,
+          bio: true, jobtitle: true, twitter: true, linkedin: true,
         },
       },
       category: { select: { id: true, name: true, slug: true } },
@@ -46,9 +46,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const blog = await getBlog(slug)
   if (!blog) return { title: 'Post not found' }
 
-  const title       = blog.seoTitle       ?? blog.title
-  const description = blog.seoDescription ?? blog.excerpt ?? ''
-  const image       = blog.ogImage        ?? blog.coverImage ?? ''
+  const title       = blog.seotitle       ?? blog.title
+  const description = blog.seodescription ?? blog.excerpt ?? ''
+  const image       = blog.ogimage        ?? blog.coverimage ?? ''
 
   return {
     title,
@@ -78,15 +78,15 @@ export default async function BlogPostPage({ params }: PageProps) {
   const related: RelatedPost[] = await (async () => {
     const sameCategory = await prisma.blog.findMany({
       where: {
-        status:     'PUBLISHED',
+        status:     'published',
         id:         { not: blog.id },
-        categoryId: blog.categoryId ?? undefined,
+        categoryid: blog.categoryid ?? undefined,
       },
       take: 3,
-      orderBy: { publishedAt: 'desc' },
+      orderBy: { publishedat: 'desc' },
       select: {
         id: true, title: true, slug: true, excerpt: true,
-        tag: true, coverImage: true, readMin: true,
+        tag: true, coverimage: true, readmin: true,
         author: { select: { name: true } },
       },
     })
@@ -95,14 +95,14 @@ export default async function BlogPostPage({ params }: PageProps) {
 
     const extra = await prisma.blog.findMany({
       where: {
-        status: 'PUBLISHED',
+        status: 'published',
         id:     { notIn: [blog.id, ...sameCategory.map((r) => r.id)] },
       },
       take:    3 - sameCategory.length,
-      orderBy: { publishedAt: 'desc' },
+      orderBy: { publishedat: 'desc' },
       select: {
         id: true, title: true, slug: true, excerpt: true,
-        tag: true, coverImage: true, readMin: true,
+        tag: true, coverimage: true, readmin: true,
         author: { select: { name: true } },
       },
     })
@@ -120,13 +120,13 @@ export default async function BlogPostPage({ params }: PageProps) {
         '@type':         'BlogPosting',
         headline:        blog.title,
         description:     blog.excerpt ?? '',
-        image:           blog.coverImage ?? blog.ogImage ?? '',
-        datePublished:   blog.publishedAt?.toISOString() ?? blog.createdAt.toISOString(),
-        dateModified:    blog.updatedAt.toISOString(),
+        image:           blog.coverimage ?? blog.ogimage ?? '',
+        datePublished:   blog.publishedat?.toISOString() ?? blog.createdat.toISOString(),
+        dateModified:    blog.updatedat.toISOString(),
         author: {
           '@type':    'Person',
           name:       blog.author.name,
-          jobTitle:   blog.author.jobTitle ?? '',
+          jobTitle:   blog.author.jobtitle ?? '',
           sameAs:     [blog.author.twitter, blog.author.linkedin].filter(Boolean),
         },
       },
@@ -161,23 +161,23 @@ export default async function BlogPostPage({ params }: PageProps) {
     slug:           blog.slug,
     excerpt:        blog.excerpt,
     content:        blog.content,
-    coverImage:     blog.coverImage,
-    ogImage:        blog.ogImage,
-    seoTitle:       blog.seoTitle,
-    seoDescription: blog.seoDescription,
+    coverimage:     blog.coverimage,
+    ogimage:        blog.ogimage,
+    seotitle:       blog.seotitle,
+    seodescription: blog.seodescription,
     faq:            faqItems,
     tag:            blog.tag,
     status:         blog.status,
-    readMin:        blog.readMin,
-    publishedAt:    blog.publishedAt?.toISOString() ?? null,
-    updatedAt:      blog.updatedAt.toISOString(),
-    createdAt:      blog.createdAt.toISOString(),
+    readmin:        blog.readmin,
+    publishedat:    blog.publishedat?.toISOString() ?? null,
+    updatedat:      blog.updatedat.toISOString(),
+    createdat:      blog.createdat.toISOString(),
     author: {
       id:       blog.author.id,
       name:     blog.author.name,
       image:    blog.author.image,
       bio:      blog.author.bio,
-      jobTitle: blog.author.jobTitle,
+      jobtitle: blog.author.jobtitle,
       twitter:  blog.author.twitter,
       linkedin: blog.author.linkedin,
     },
@@ -185,8 +185,8 @@ export default async function BlogPostPage({ params }: PageProps) {
       ? { id: blog.category.id, name: blog.category.name, slug: blog.category.slug }
       : null,
     tags: blog.tags.map((t) => ({
-      blogId: t.blogId,
-      tagId:  t.tagId,
+      blogid: t.blogid,
+      tagid:  t.tagid,
       tag:    { id: t.tag.id, name: t.tag.name, slug: t.tag.slug },
     })),
   }

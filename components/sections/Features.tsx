@@ -6,6 +6,10 @@ export default function Features() {
     <>
       <style>{`
         .features-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 56px; }
+        @media (max-width: 640px) {
+          .features-head { margin-bottom: 28px; }
+          .feature { padding: 20px 18px 22px; min-height: auto; }
+        }
         .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         @media (max-width: 1040px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 640px)  { .features-grid { grid-template-columns: 1fr; } }
@@ -16,14 +20,22 @@ export default function Features() {
           display: inline-flex; align-items: center; justify-content: center;
           margin-bottom: 18px;
           border: 1px solid color-mix(in oklab, var(--accent) 25%, transparent);
+          transition: transform .3s var(--ease), background .25s, box-shadow .3s;
         }
-        .feature-title { font-family: var(--font-display); font-weight: 600; font-size: 19px; letter-spacing: -0.01em; color: var(--fg); margin-bottom: 8px; }
+        .feature:hover .feature-icon {
+          transform: scale(1.15) rotate(-8deg);
+          background: var(--accent);
+          color: var(--accent-fg);
+          box-shadow: 0 8px 20px -6px var(--accent-glow);
+        }
+        .feature-title { font-family: var(--font-display); font-weight: 600; font-size: 19px; letter-spacing: -0.01em; color: var(--fg); margin-bottom: 8px; transition: color .2s; }
+        .feature:hover .feature-title { color: var(--accent); }
         .feature-body { color: var(--fg-muted); font-size: 14.5px; line-height: 1.55; text-wrap: pretty; }
       `}</style>
 
       <section id="features" className="features">
         <div className="container">
-          <div className="features-head">
+          <div className="features-head" data-reveal="fade-up">
             <span className="eyebrow">Why teams switch</span>
             <h2 className="section-title">
               Not another chat box.<br />
@@ -35,7 +47,7 @@ export default function Features() {
             {FEATURES.map((f, i) => {
               const Icon = Icons[f.icon]
               return (
-                <div key={i} className="feature card">
+                <div key={i} className="feature card" data-reveal="pop" style={{'--reveal-delay':`${i*55}ms`} as any}>
                   {Icon && <div className="feature-icon"><Icon size={20} /></div>}
                   <h3 className="feature-title">{f.title}</h3>
                   <p className="feature-body">{f.body}</p>

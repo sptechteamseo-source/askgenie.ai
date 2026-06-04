@@ -49,7 +49,7 @@ export async function signup(formData: FormData) {
   const { name, email, password } = parsed.data
 
   // Check if email is already registered
-  const existing = await prisma.user.findUnique({ where: { email } })
+  const existing = await prisma.users.findUnique({ where: { email } })
   if (existing) {
     return { error: 'An account with this email already exists' }
   }
@@ -57,8 +57,8 @@ export async function signup(formData: FormData) {
   // Hash password with bcrypt (cost factor 12)
   const hashedPassword = await bcrypt.hash(password, 12)
 
-  await prisma.user.create({
-    data: { name, email, password: hashedPassword, role: 'AUTHOR' },
+  await prisma.users.create({
+    data: { name, email, password: hashedPassword, role: 'author' },
   })
 
   // Auto sign in after signup
@@ -78,7 +78,7 @@ export async function forgotPassword(formData: FormData) {
 
   if (!email) return { error: 'Email is required' }
 
-  const user = await prisma.user.findUnique({ where: { email } })
+  const user = await prisma.users.findUnique({ where: { email } })
 
   // Always return success to prevent email enumeration
   if (!user) {
@@ -89,9 +89,9 @@ export async function forgotPassword(formData: FormData) {
   const token = crypto.randomBytes(32).toString('hex')
   const expiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
 
-  await prisma.user.update({
+  await prisma.users.update({
     where: { email },
-    data: { resetToken: token, resetTokenExpiry: expiry },
+    data: { resettoken: token, resettokenexpiry: expiry },
   })
 
   // In production: send email with reset link
@@ -116,10 +116,10 @@ export async function resetPassword(formData: FormData) {
   }
 
   // Find user with valid (non-expired) reset token
-  const user = await prisma.user.findFirst({
+  const user = await prisma.users.findFirst({
     where: {
-      resetToken: token,
-      resetTokenExpiry: { gt: new Date() },
+      resettoken: token,
+      resettokenexpiry: { gt: new Date() },
     },
   })
 
@@ -129,12 +129,12 @@ export async function resetPassword(formData: FormData) {
 
   const hashedPassword = await bcrypt.hash(password, 12)
 
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: user.id },
     data: {
       password: hashedPassword,
-      resetToken: null,
-      resetTokenExpiry: null,
+      resettoken: null,
+      resettokenexpiry: null,
     },
   })
 

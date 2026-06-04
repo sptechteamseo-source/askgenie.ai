@@ -1,4 +1,4 @@
-﻿import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/rbac'
 import { z } from 'zod'
@@ -10,12 +10,13 @@ const schema = z.object({
 
 export async function GET() {
   try {
-    const tags = await prisma.blogTag.findMany({
+    const tags = await prisma.blogtag.findMany({
       include: { _count: { select: { posts: true } } },
       orderBy: { name: 'asc' },
     })
     return Response.json({ success: true, data: tags })
-  } catch {
+  } catch (error) {
+    console.error('[GET /api/tags]', error)
     return Response.json({ success: false, error: 'Failed to fetch tags' }, { status: 500 })
   }
 }
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: false, error: parsed.error.issues[0].message }, { status: 400 })
     }
 
-    const tag = await prisma.blogTag.create({ data: parsed.data })
+    const tag = await prisma.blogtag.create({ data: parsed.data })
 
     return Response.json({ success: true, data: tag }, { status: 201 })
   } catch (error: any) {
@@ -40,4 +41,3 @@ export async function POST(request: NextRequest) {
     return Response.json({ success: false, error: 'Failed to create tag' }, { status: 500 })
   }
 }
-

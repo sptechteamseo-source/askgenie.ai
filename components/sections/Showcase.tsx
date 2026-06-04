@@ -122,10 +122,13 @@ export default function Showcase() {
           background: transparent; border: 0;
           font-family: var(--font-display); font-size: 13px; font-weight: 500;
           color: var(--fg-subtle);
-          transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+          transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), transform .2s;
         }
-        .showcase-tab:hover { color: var(--fg); }
+        .showcase-tab:hover { color: var(--fg); transform: translateY(-1px); }
         .showcase-tab.is-active { background: var(--bg-elevated); color: var(--fg); border: 1px solid var(--border); }
+        .showcase-tab.is-active svg { color: var(--accent); }
+        .showcase-frame { transition: box-shadow .35s var(--ease); }
+        .showcase-frame:hover { box-shadow: 0 24px 60px -24px color-mix(in oklab,var(--accent) 18%,transparent); }
         .showcase-body { min-height: 420px; }
 
         .sc-grid { display: grid; grid-template-columns: 230px 1fr; min-height: 420px; }
@@ -139,6 +142,16 @@ export default function Showcase() {
         .sc-side-row--sub { color: var(--fg-subtle); padding-left: 18px; }
         .sc-side-bullet { width: 8px; height: 8px; border-radius: 2px; }
         .sc-main { padding: 26px 30px; display: flex; flex-direction: column; gap: 22px; background: var(--bg-elevated); }
+        @media (max-width: 640px) {
+          .sc-main { padding: 16px; gap: 14px; }
+          .sc-q div[style] { font-size: 18px !important; }
+          .showcase-body { min-height: auto; }
+          .showcase-tabs { flex-wrap: wrap; }
+        }
+        @media (max-width: 480px) {
+          .sc-main { padding: 12px; }
+          .sc-q, .sc-a { padding: 14px; }
+        }
         .sc-q, .sc-a { padding: 18px 20px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg); }
         .sc-sources { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
         .sc-source { display: flex; gap: 10px; font-size: 12.5px; color: var(--fg-muted); }
@@ -164,7 +177,7 @@ export default function Showcase() {
 
       <section className="showcase">
         <div className="container">
-          <div className="showcase-head">
+          <div className="showcase-head" data-reveal="fade-up">
             <span className="eyebrow">A closer look</span>
             <h2 className="section-title">
               One workspace.<br />Every system. Every answer.
@@ -176,7 +189,7 @@ export default function Showcase() {
             </p>
           </div>
 
-          <div className="showcase-frame card">
+          <div className="showcase-frame card" data-reveal="fade-up" style={{'--reveal-delay':'80ms'} as any}>
             <div className="showcase-tabs">
               {TABS.map((t) => {
                 const Icon = Icons[t.icon]

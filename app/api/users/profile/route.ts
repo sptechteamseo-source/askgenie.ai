@@ -6,7 +6,7 @@ import { z } from 'zod'
 const profileSchema = z.object({
   name:     z.string().min(2, 'Name must be at least 2 characters'),
   bio:      z.string().optional().or(z.literal('')),
-  jobTitle: z.string().optional().or(z.literal('')),
+  jobtitle: z.string().optional().or(z.literal('')),
   twitter:  z.string().optional().or(z.literal('')),
   linkedin: z.string().optional().or(z.literal('')),
   image:    z.string().optional().or(z.literal('')),
@@ -20,16 +20,17 @@ export async function GET() {
       return Response.json({ success: false, error: 'Please log in' }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: session.user.id },
       select: {
         id: true, name: true, email: true, role: true,
-        image: true, bio: true, jobTitle: true, twitter: true, linkedin: true,
+        image: true, bio: true, jobtitle: true, twitter: true, linkedin: true,
       },
     })
 
     return Response.json({ success: true, data: user })
-  } catch {
+  } catch (error) {
+    console.error('[GET /api/users/profile]', error)
     return Response.json({ success: false, error: 'Failed to load profile' }, { status: 500 })
   }
 }
@@ -52,17 +53,18 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    const updated = await prisma.user.update({
+    const updated = await prisma.users.update({
       where: { id: session.user.id },
       data: parsed.data,
       select: {
         id: true, name: true, email: true, role: true,
-        image: true, bio: true, jobTitle: true, twitter: true, linkedin: true,
+        image: true, bio: true, jobtitle: true, twitter: true, linkedin: true,
       },
     })
 
     return Response.json({ success: true, data: updated })
-  } catch {
+  } catch (error) {
+    console.error('[PATCH /api/users/profile]', error)
     return Response.json({ success: false, error: 'Failed to update profile' }, { status: 500 })
   }
 }

@@ -1,4 +1,4 @@
-﻿import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/rbac'
 import { z } from 'zod'
@@ -8,11 +8,12 @@ const useCaseSchema = z.object({
   slug: z.string().min(1, 'Slug is required'),
   persona: z.string().min(1, 'Persona is required'),
   excerpt: z.string().optional(),
-  content: z.string().min(1, 'Content is required'),
+  content: z.string().optional().default(''),
+  pagedata: z.any().optional(),
   metric: z.string().optional(),
   industry: z.string().optional(),
-  teamType: z.string().optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
+  teamtype: z.string().optional(),
+  status: z.enum(['draft', 'published', 'archived']).default('draft'),
 })
 
 // GET /api/use-cases
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const persona = searchParams.get('persona')
 
-    const useCases = await prisma.useCase.findMany({
+    const useCases = await prisma.usecase.findMany({
       where: {
         ...(status ? { status: status as any } : {}),
         ...(persona ? { persona } : {}),
@@ -30,11 +31,12 @@ export async function GET(request: NextRequest) {
       include: {
         author: { select: { id: true, name: true, email: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdat: 'desc' },
     })
 
     return Response.json({ success: true, data: useCases })
-  } catch {
+  } catch (error) {
+    console.error('[GET /api/use-cases]', error)
     return Response.json({ success: false, error: 'Failed to fetch use cases' }, { status: 500 })
   }
 }
@@ -54,10 +56,10 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data
-    const publishedAt = data.status === 'PUBLISHED' ? new Date() : undefined
+    const publishedat = data.status === 'published' ? new Date() : undefined
 
-    const useCase = await prisma.useCase.create({
-      data: { ...data, publishedAt, authorId: session.user.id },
+    const useCase = await prisma.usecase.create({
+      data: { ...data, publishedat, authorid: session.user.id },
       include: { author: { select: { id: true, name: true, email: true } } },
     })
 
@@ -69,4 +71,3 @@ export async function POST(request: NextRequest) {
     return Response.json({ success: false, error: 'Failed to create use case' }, { status: 500 })
   }
 }
-

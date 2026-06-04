@@ -4,15 +4,15 @@ import DashboardHeader from '@/components/dashboard/Header'
 import SettingsForm from './SettingsForm'
 import { prisma } from '@/lib/prisma'
 
-// Only ADMIN can access settings
+// Only admin can access settings
 export default async function SettingsPage() {
   const session = await auth()
 
-  if (session?.user?.role !== 'ADMIN') {
+  if (session?.user?.role !== 'admin') {
     redirect('/dashboard')
   }
 
-  const currentUser = await prisma.user.findUnique({
+  const currentUser = await prisma.users.findUnique({
     where: { id: session.user.id },
     select: { id: true, name: true, email: true, image: true },
   })

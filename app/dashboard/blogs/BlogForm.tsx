@@ -21,15 +21,15 @@ interface BlogFormProps {
     slug: string
     excerpt: string | null
     content: string
-    coverImage: string | null
-    ogImage: string | null
-    seoTitle: string | null
-    seoDescription: string | null
+    coverimage: string | null
+    ogimage: string | null
+    seotitle: string | null
+    seodescription: string | null
     faq: FaqItem[] | null
     tag: string | null
     status: string
-    readMin: number
-    categoryId: string | null
+    readmin: number
+    categoryid: string | null
   }
   categories: Category[]
 }
@@ -42,15 +42,15 @@ export default function BlogForm({ initialData, categories }: BlogFormProps) {
   const [error, setError] = useState('')
 
   // ── Cover image state ──
-  const [coverImage, setCoverImage] = useState(initialData?.coverImage || '')
-  const [coverPreview, setCoverPreview] = useState(initialData?.coverImage || '')
+  const [coverImage, setCoverImage] = useState(initialData?.coverimage || '')
+  const [coverPreview, setCoverPreview] = useState(initialData?.coverimage || '')
   const [coverUploading, setCoverUploading] = useState(false)
   const [coverError, setCoverError] = useState('')
   const coverRef = useRef<HTMLInputElement>(null)
 
   // ── OG image state (for social sharing) ──
-  const [ogImage, setOgImage] = useState(initialData?.ogImage || '')
-  const [ogPreview, setOgPreview] = useState(initialData?.ogImage || '')
+  const [ogImage, setOgImage] = useState(initialData?.ogimage || '')
+  const [ogPreview, setOgPreview] = useState(initialData?.ogimage || '')
   const [ogUploading, setOgUploading] = useState(false)
   const [ogError, setOgError] = useState('')
   const ogRef = useRef<HTMLInputElement>(null)
@@ -63,7 +63,9 @@ export default function BlogForm({ initialData, categories }: BlogFormProps) {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   }
 
-  // Generic image uploader (used for both cover + og)
+  // Generic image uploader (used for both cover + og).
+  // Creates an object URL for instant preview, then swaps to the server URL.
+  // Always revokes the temporary blob URL to avoid memory leaks.
   async function uploadImage(
     file: File,
     setPreview: (url: string) => void,
@@ -72,19 +74,35 @@ export default function BlogForm({ initialData, categories }: BlogFormProps) {
     setErr: (msg: string) => void,
     current: string
   ) {
-    setPreview(URL.createObjectURL(file))
+    const tempUrl = URL.createObjectURL(file)
+    setPreview(tempUrl)
     setErr('')
     setUploading(true)
     try {
       const fd = new FormData()
       fd.append('file', file)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      if (!res.ok && res.status >= 500) {
+        setErr('Upload failed — server error')
+        setPreview(current)
+        return
+      }
       const data = await res.json()
-      if (!data.success) { setErr(data.error || 'Upload failed'); setPreview(current); return }
+      if (!data.success) {
+        setErr(data.error || 'Upload failed')
+        setPreview(current)
+        return
+      }
       setSaved(data.url)
       setPreview(data.url)
-    } catch { setErr('Upload failed — please try again'); setPreview(current) }
-    finally { setUploading(false) }
+    } catch {
+      setErr('Upload failed — please try again')
+      setPreview(current)
+    } finally {
+      setUploading(false)
+      // Release the blob URL once preview has been replaced (or restored).
+      URL.revokeObjectURL(tempUrl)
+    }
   }
 
   // ── FAQ helpers ──
@@ -111,27 +129,39 @@ export default function BlogForm({ initialData, categories }: BlogFormProps) {
       slug:           text('slug')!,
       excerpt:        text('excerpt'),
       content:        text('content')!,
-      coverImage:     coverImage  || undefined,
-      ogImage:        ogImage     || undefined,
-      seoTitle:       text('seoTitle'),
-      seoDescription: text('seoDescription'),
+      coverimage:     coverImage  || undefined,
+      ogimage:        ogImage     || undefined,
+      seotitle:       text('seotitle'),
+      seodescription: text('seodescription'),
       // Only include FAQ items that have a non-empty question
       faq:            faqItems.filter(f => f.q.trim().length > 0),
       tag:            text('tag'),
       status:         text('status')!,
-      readMin:        Number(fd.get('readMin')) || 5,
-      categoryId:     text('categoryId'),
+      readmin:        Number(fd.get('readmin')) || 5,
+      categoryid:     text('categoryid'),
     }
 
     const url    = isEditing ? `/api/blogs/${initialData.id}` : '/api/blogs'
     const method = isEditing ? 'PUT' : 'POST'
 
-    const res  = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-    const data = await res.json()
+    try {
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
 
-    if (!data.success) { setError(data.error || 'Something went wrong'); setLoading(false); return }
-    router.push('/dashboard/blogs')
-    router.refresh()
+      if (!res.ok && res.status >= 500) {
+        setError('Server error — please try again')
+        setLoading(false)
+        return
+      }
+
+      const data = await res.json()
+
+      if (!data.success) { setError(data.error || 'Something went wrong'); setLoading(false); return }
+      router.push('/dashboard/blogs')
+      router.refresh()
+    } catch {
+      setError('Network error — please try again')
+      setLoading(false)
+    }
   }
 
   return (
@@ -177,10 +207,10 @@ export default function BlogForm({ initialData, categories }: BlogFormProps) {
             <h3 className="form-card-title">Publish</h3>
             <div className="form-field">
               <label htmlFor="status">Status</label>
-              <select id="status" name="status" defaultValue={initialData?.status ?? 'DRAFT'}>
-                <option value="DRAFT">Draft</option>
-                <option value="PUBLISHED">Published</option>
-                <option value="ARCHIVED">Archived</option>
+              <select id="status" name="status" defaultValue={initialData?.status ?? 'draft'}>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
               </select>
             </div>
             <div className="form-actions">
@@ -220,18 +250,18 @@ export default function BlogForm({ initialData, categories }: BlogFormProps) {
             <h3 className="form-card-title">SEO & Metadata</h3>
 
             <div className="form-field">
-              <label htmlFor="seoTitle">SEO Title</label>
-              <input id="seoTitle" name="seoTitle" type="text"
-                defaultValue={initialData?.seoTitle || ''}
+              <label htmlFor="seotitle">SEO Title</label>
+              <input id="seotitle" name="seotitle" type="text"
+                defaultValue={initialData?.seotitle || ''}
                 placeholder="Leave blank to use post title"
               />
               <span className="field-hint">Shown in browser tab and Google results</span>
             </div>
 
             <div className="form-field">
-              <label htmlFor="seoDescription">Meta Description</label>
-              <textarea id="seoDescription" name="seoDescription" rows={3}
-                defaultValue={initialData?.seoDescription || ''}
+              <label htmlFor="seodescription">Meta Description</label>
+              <textarea id="seodescription" name="seodescription" rows={3}
+                defaultValue={initialData?.seodescription || ''}
                 placeholder="Leave blank to use excerpt"
               />
               <span className="field-hint">Google shows ~160 characters</span>
@@ -246,12 +276,12 @@ export default function BlogForm({ initialData, categories }: BlogFormProps) {
               <input id="tag" name="tag" type="text" defaultValue={initialData?.tag || ''} placeholder="Engineering, Product, Research…" />
             </div>
             <div className="form-field">
-              <label htmlFor="readMin">Read time (minutes)</label>
-              <input id="readMin" name="readMin" type="number" defaultValue={initialData?.readMin ?? 5} min={1} max={60} />
+              <label htmlFor="readmin">Read time (minutes)</label>
+              <input id="readmin" name="readmin" type="number" defaultValue={initialData?.readmin ?? 5} min={1} max={60} />
             </div>
             <div className="form-field">
-              <label htmlFor="categoryId">Category</label>
-              <select id="categoryId" name="categoryId" defaultValue={initialData?.categoryId || ''}>
+              <label htmlFor="categoryid">Category</label>
+              <select id="categoryid" name="categoryid" defaultValue={initialData?.categoryid || ''}>
                 <option value="">No category</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>

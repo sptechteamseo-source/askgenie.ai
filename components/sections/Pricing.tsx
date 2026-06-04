@@ -20,17 +20,30 @@ export default function Pricing() {
         .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
         @media (max-width: 1000px) { .tiers { grid-template-columns: 1fr; } }
         .tier { padding: 32px 28px; display: flex; flex-direction: column; gap: 6px; position: relative; }
-        .tier--featured { border-color: var(--accent); box-shadow: 0 30px 60px -30px var(--accent-glow); }
+        @media (max-width: 640px) {
+          .pricing-head { margin-bottom: 32px; }
+          .tier { padding: 24px 18px; }
+          .tier-price-num { font-size: 40px; }
+          .pricing-foot { flex-direction: column; text-align: center; font-size: 12px; }
+        }
+        @keyframes featuredGlow { 0%,100%{box-shadow:0 30px 60px -30px var(--accent-glow)} 50%{box-shadow:0 40px 80px -20px var(--accent-glow)} }
+        .tier--featured { border-color: var(--accent); animation: featuredGlow 3.5s ease-in-out infinite; }
         .tier-badge {
           position: absolute; top: -12px; left: 28px;
           padding: 5px 10px; border-radius: 9999px;
           background: var(--accent); color: var(--accent-fg);
           font-family: var(--font-display); font-weight: 600; font-size: 11.5px; letter-spacing: .03em;
         }
-        .tier-name { font-family: var(--font-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; }
+        .tier-name { font-family: var(--font-display); font-weight: 600; font-size: 22px; letter-spacing: -0.02em; transition: color .2s; }
+        .tier:hover .tier-name { color: var(--accent); }
         .tier-tag { color: var(--fg-muted); font-size: 13.5px; }
         .tier-price { display: flex; align-items: baseline; gap: 4px; margin-top: 18px; }
-        .tier-price-num { font-family: var(--font-display); font-weight: 600; font-size: 48px; letter-spacing: -0.03em; }
+        @keyframes priceHop { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-4px)} }
+        .tier-price-num {
+          font-family: var(--font-display); font-weight: 600; font-size: 48px; letter-spacing: -0.03em;
+          color: var(--accent); display: inline-block;
+        }
+        .tier:hover .tier-price-num { animation: priceHop .45s var(--ease); }
         .tier-price-suffix { color: var(--fg-muted); font-size: 14px; }
         .tier-billing { font-size: 12.5px; }
         .tier-cta { margin-top: 18px; justify-content: center; }
@@ -42,7 +55,7 @@ export default function Pricing() {
 
       <section id="pricing" className="pricing">
         <div className="container">
-          <div className="pricing-head">
+          <div className="pricing-head" data-reveal="fade-up">
             <span className="eyebrow">Pricing</span>
             <h2 className="section-title">Simple, per-seat. <em>Honest</em>.</h2>
             <p className="section-lede">No usage limits to learn. No surprise overages. Cancel anytime.</p>
@@ -66,8 +79,8 @@ export default function Pricing() {
           </div>
 
           <div className="tiers">
-            {TIERS.map((t) => (
-              <div key={t.name} className={`tier card ${t.featured ? 'tier--featured' : ''}`}>
+            {TIERS.map((t, i) => (
+              <div key={t.name} className={`tier card ${t.featured ? 'tier--featured' : ''}`} data-reveal="pop" style={{'--reveal-delay':`${i*80}ms`} as any}>
                 {t.featured && <div className="tier-badge">{t.tag}</div>}
                 <div className="tier-name">{t.name}</div>
                 <div className="tier-tag">{t.featured ? 'Built for fast-growing teams' : t.tag}</div>

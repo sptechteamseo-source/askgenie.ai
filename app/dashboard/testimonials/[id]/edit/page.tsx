@@ -15,14 +15,14 @@ export default async function EditTestimonialPage({
 
   return (
     <>
-      <DashboardHeader title="Edit Testimonial" description={testimonial.authorName} />
+      <DashboardHeader title="Edit Testimonial" description={testimonial.authorname} />
       <div className="dash-content">
         <TestimonialForm
           initialData={{
             id: testimonial.id,
             quote: testimonial.quote,
-            authorName: testimonial.authorName,
-            authorRole: testimonial.authorRole,
+            authorname: testimonial.authorname,
+            authorrole: testimonial.authorrole,
             company: testimonial.company,
             initials: testimonial.initials,
             seats: testimonial.seats,

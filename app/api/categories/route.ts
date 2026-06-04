@@ -1,4 +1,4 @@
-﻿import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/rbac'
 import { z } from 'zod'
@@ -10,12 +10,13 @@ const schema = z.object({
 
 export async function GET() {
   try {
-    const categories = await prisma.blogCategory.findMany({
+    const categories = await prisma.blogcategory.findMany({
       include: { _count: { select: { blogs: true } } },
       orderBy: { name: 'asc' },
     })
     return Response.json({ success: true, data: categories })
-  } catch {
+  } catch (error) {
+    console.error('[GET /api/categories]', error)
     return Response.json({ success: false, error: 'Failed to fetch categories' }, { status: 500 })
   }
 }
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: false, error: parsed.error.issues[0].message }, { status: 400 })
     }
 
-    const category = await prisma.blogCategory.create({ data: parsed.data })
+    const category = await prisma.blogcategory.create({ data: parsed.data })
 
     return Response.json({ success: true, data: category }, { status: 201 })
   } catch (error: any) {
@@ -40,4 +41,3 @@ export async function POST(request: NextRequest) {
     return Response.json({ success: false, error: 'Failed to create category' }, { status: 500 })
   }
 }
-

@@ -3,118 +3,136 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
-model User {
-  id               String    @id @default(cuid())
+model users {
+  id               String    @id @default(cuid()) @map("_id")
   name             String
   email            String    @unique
   password         String
-  role             Role      @default(AUTHOR)
+  role             role      @default(author)
   image            String?
   // Author profile fields — editable from dashboard /profile
-  bio              String?   // Short author bio paragraph
-  jobTitle         String?   // e.g. "Director of RevOps · Northwind Capital"
-  twitter          String?   // Full Twitter URL
-  linkedin         String?   // Full LinkedIn URL
-  resetToken       String?
-  resetTokenExpiry DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  blogs            Blog[]
-  useCases         UseCase[]
+  bio              String?
+  jobtitle         String?
+  twitter          String?
+  linkedin         String?
+  resettoken       String?
+  resettokenexpiry DateTime?
+  createdat        DateTime  @default(now())
+  updatedat        DateTime  @updatedAt
+  blogs            blog[]
+  usecases         usecase[]
 }
 
-model Blog {
-  id             String        @id @default(cuid())
+model blog {
+  id             String        @id @default(cuid()) @map("_id")
   title          String
   slug           String        @unique
   excerpt        String?
   content        String
-  coverImage     String?
+  coverimage     String?
   // SEO & Open Graph — editable from dashboard blog form
-  ogImage        String?       // Open Graph / Twitter card image (can differ from coverImage)
-  seoTitle       String?       // Overrides title in <title> tag
-  seoDescription String?       // Overrides excerpt in <meta description>
-  // FAQ — stored as JSON array [{q, a}] — editable from dashboard
+  ogimage        String?
+  seotitle       String?
+  seodescription String?
+  // FAQ — stored as JSON array [{q, a}]
   faq            Json?
   tag            String?
-  status         Status        @default(DRAFT)
-  readMin        Int           @default(5)
-  publishedAt    DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  authorId       String
-  categoryId     String?
-  author         User          @relation(fields: [authorId], references: [id])
-  category       BlogCategory? @relation(fields: [categoryId], references: [id])
-  tags           BlogTagMap[]
+  status         status        @default(draft)
+  readmin        Int           @default(5)
+  publishedat    DateTime?
+  createdat      DateTime      @default(now())
+  updatedat      DateTime      @updatedAt
+  authorid       String
+  categoryid     String?
+  author         users         @relation(fields: [authorid], references: [id])
+  category       blogcategory? @relation(fields: [categoryid], references: [id])
+  tags           blogtagmap[]
 }
 
-model BlogCategory {
-  id    String @id @default(cuid())
+model blogcategory {
+  id    String @id @default(cuid()) @map("_id")
   name  String @unique
   slug  String @unique
-  blogs Blog[]
+  blogs blog[]
 }
 
-model BlogTag {
-  id    String       @id @default(cuid())
+model blogtag {
+  id    String       @id @default(cuid()) @map("_id")
   name  String       @unique
   slug  String       @unique
-  posts BlogTagMap[]
+  posts blogtagmap[]
 }
 
-model BlogTagMap {
-  blogId String
-  tagId  String
-  blog   Blog    @relation(fields: [blogId], references: [id], onDelete: Cascade)
-  tag    BlogTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+model blogtagmap {
+  id     String  @id @default(cuid()) @map("_id")
+  blogid String
+  tagid  String
+  blog   blog    @relation(fields: [blogid], references: [id], onDelete: Cascade)
+  tag    blogtag @relation(fields: [tagid], references: [id], onDelete: Cascade)
 
-  @@id([blogId, tagId])
+  @@unique([blogid, tagid])
 }
 
-model UseCase {
-  id          String    @id @default(cuid())
+model usecase {
+  id          String    @id @default(cuid()) @map("_id")
   title       String
   slug        String    @unique
   persona     String
   excerpt     String?
-  content     String
+  content     String    @default("")
+  // Structured page content — mirrors the sections in each use-case page
+  // Shape: { hero, explained[3], steps[4], problems[6], features[6], benefits[6], stats[4], quote, logos[12] }
+  pagedata    Json?
   metric      String?
   industry    String?
-  teamType    String?
-  status      Status    @default(DRAFT)
-  publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
+  teamtype    String?
+  status      status    @default(draft)
+  publishedat DateTime?
+  createdat   DateTime  @default(now())
+  updatedat   DateTime  @updatedAt
+  authorid    String
+  author      users     @relation(fields: [authorid], references: [id])
 }
 
-model Testimonial {
-  id         String   @id @default(cuid())
+model testimonial {
+  id         String   @id @default(cuid()) @map("_id")
   quote      String
-  authorName String
-  authorRole String?
+  authorname String
+  authorrole String?
   company    String?
   initials   String?
   seats      String?
-  status     Status   @default(DRAFT)
+  status     status   @default(draft)
   order      Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdat  DateTime @default(now())
+  updatedat  DateTime @updatedAt
 }
 
-enum Role {
-  ADMIN
-  EDITOR
-  AUTHOR
+model contactsubmission {
+  id        String   @id @default(cuid()) @map("_id")
+  name      String
+  email     String
+  company   String?
+  role      String?
+  teamsize  String?
+  message   String
+  status    String   @default("new") // new | read | replied | archived
+  createdat DateTime @default(now())
+  updatedat DateTime @updatedAt
 }
 
-enum Status {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+enum role {
+  admin
+  editor
+  author
+}
+
+enum status {
+  draft
+  published
+  archived
 }

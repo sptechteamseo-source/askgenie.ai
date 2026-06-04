@@ -22,25 +22,25 @@ export default async function DashboardPage() {
     recentUseCases,
   ] = await Promise.all([
     prisma.blog.count(),
-    prisma.useCase.count(),
+    prisma.usecase.count(),
     prisma.testimonial.count(),
-    prisma.user.count(),
-    prisma.blog.count({ where: { status: 'PUBLISHED' } }),
-    prisma.useCase.count({ where: { status: 'PUBLISHED' } }),
-    prisma.blog.count({ where: { status: 'DRAFT' } }),
-    prisma.useCase.count({ where: { status: 'DRAFT' } }),
+    prisma.users.count(),
+    prisma.blog.count({ where: { status: 'published' } }),
+    prisma.usecase.count({ where: { status: 'published' } }),
+    prisma.blog.count({ where: { status: 'draft' } }),
+    prisma.usecase.count({ where: { status: 'draft' } }),
 
     // 5 most recent blogs
     prisma.blog.findMany({
       take: 5,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdat: 'desc' },
       include: { author: { select: { name: true } } },
     }),
 
     // 5 most recent use cases
-    prisma.useCase.findMany({
+    prisma.usecase.findMany({
       take: 5,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdat: 'desc' },
       include: { author: { select: { name: true } } },
     }),
   ])
@@ -85,7 +85,7 @@ export default async function DashboardPage() {
                     <div className="recent-item-info">
                       <span className="recent-item-title">{blog.title}</span>
                       <span className="recent-item-meta">
-                        {blog.author.name} · {new Date(blog.createdAt).toLocaleDateString()}
+                        {blog.author.name} · {new Date(blog.createdat).toLocaleDateString()}
                       </span>
                     </div>
                     <span className={`status-badge status-${blog.status.toLowerCase()}`}>
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
                     <div className="recent-item-info">
                       <span className="recent-item-title">{uc.title}</span>
                       <span className="recent-item-meta">
-                        {uc.persona} · {new Date(uc.createdAt).toLocaleDateString()}
+                        {uc.persona} · {new Date(uc.createdat).toLocaleDateString()}
                       </span>
                     </div>
                     <span className={`status-badge status-${uc.status.toLowerCase()}`}>
@@ -140,6 +140,8 @@ export default async function DashboardPage() {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
         }
         .dash-section-title {
           font-size: 0.95rem;
@@ -174,12 +176,19 @@ export default async function DashboardPage() {
           text-decoration: none;
           transition: background var(--transition-fast);
           color: var(--fg);
+          gap: 12px;
         }
         .recent-item:last-child { border-bottom: none; }
         .recent-item:hover { background: var(--bg-sunken); }
-        .recent-item-info { display: flex; flex-direction: column; gap: 2px; }
-        .recent-item-title { font-size: 0.875rem; font-weight: 500; }
-        .recent-item-meta { font-size: 0.75rem; color: var(--fg-muted); }
+        .recent-item-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .recent-item-title {
+          font-size: 0.875rem;
+          font-weight: 500;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .recent-item-meta { font-size: 0.75rem; color: var(--fg-muted); white-space: nowrap; }
         .empty-state { padding: 20px; font-size: 0.875rem; color: var(--fg-muted); }
         .empty-state a { color: var(--accent); }
         .status-badge {
@@ -194,9 +203,18 @@ export default async function DashboardPage() {
         .status-published { background: #f0fdf4; color: #16a34a; }
         .status-draft { background: var(--bg-sunken); color: var(--fg-muted); }
         .status-archived { background: #fef2f2; color: #dc2626; }
+
+        /* ── Responsive ─────────────────────────────────── */
         @media (max-width: 900px) {
           .stats-grid { grid-template-columns: repeat(2, 1fr); }
           .dash-two-col { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+          .dash-content { padding: 16px; gap: 20px; }
+        }
+        @media (max-width: 480px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .dash-content { padding: 12px; }
         }
       `}</style>
     </>

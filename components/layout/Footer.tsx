@@ -25,6 +25,13 @@ export default function Footer() {
         .foot-social a:hover { color: var(--fg); background: var(--bg-elevated); opacity: 1; }
         .foot-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
         @media (max-width: 720px) { .foot-cols { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) {
+          .foot { padding: 40px 0 24px; }
+          .foot-top { padding-bottom: 32px; gap: 28px; }
+          .foot-cols { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+          .foot-bottom { flex-direction: column; align-items: flex-start; gap: 10px; }
+          .foot-region { display: none; }
+        }
         .foot-col { display: flex; flex-direction: column; gap: 8px; }
         .foot-col a { color: var(--fg-muted); font-size: 13.5px; text-decoration: none; transition: color var(--dur-fast) var(--ease); }
         .foot-col a:hover { color: var(--fg); opacity: 1; }

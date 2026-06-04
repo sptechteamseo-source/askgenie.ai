@@ -7,8 +7,8 @@ interface TestimonialFormProps {
   initialData?: {
     id: string
     quote: string
-    authorName: string
-    authorRole: string | null
+    authorname: string
+    authorrole: string | null
     company: string | null
     initials: string | null
     seats: string | null
@@ -31,8 +31,8 @@ export default function TestimonialForm({ initialData }: TestimonialFormProps) {
     const fd = new FormData(e.currentTarget)
     const body = {
       quote: fd.get('quote') as string,
-      authorName: fd.get('authorName') as string,
-      authorRole: fd.get('authorRole') as string,
+      authorname: fd.get('authorname') as string,
+      authorrole: fd.get('authorrole') as string,
       company: fd.get('company') as string,
       initials: fd.get('initials') as string,
       seats: fd.get('seats') as string,
@@ -43,39 +43,33 @@ export default function TestimonialForm({ initialData }: TestimonialFormProps) {
     const url = isEditing ? `/api/testimonials/${initialData.id}` : '/api/testimonials'
     const method = isEditing ? 'PUT' : 'POST'
 
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
 
-    const data = await res.json()
+      if (!res.ok && res.status >= 500) {
+        setError('Server error — please try again')
+        setLoading(false)
+        return
+      }
 
-    if (!data.success) {
-      setError(data.error || 'Something went wrong')
+      const data = await res.json()
+
+      if (!data.success) {
+        setError(data.error || 'Something went wrong')
+        setLoading(false)
+        return
+      }
+
+      router.push('/dashboard/testimonials')
+      router.refresh()
+    } catch {
+      setError('Network error — please try again')
       setLoading(false)
-      return
     }
-
-    router.push('/dashboard/testimonials')
-    router.refresh()
-  }
-
-  async function handleDelete() {
-    if (!isEditing || !confirm('Delete this testimonial?')) return
-    setLoading(true)
-
-    const res = await fetch(`/api/testimonials/${initialData.id}`, { method: 'DELETE' })
-    const data = await res.json()
-
-    if (!data.success) {
-      setError(data.error || 'Delete failed')
-      setLoading(false)
-      return
-    }
-
-    router.push('/dashboard/testimonials')
-    router.refresh()
   }
 
   return (
@@ -98,8 +92,8 @@ export default function TestimonialForm({ initialData }: TestimonialFormProps) {
 
           <div className="form-row">
             <div className="form-field">
-              <label htmlFor="authorName">Author name *</label>
-              <input id="authorName" name="authorName" type="text" defaultValue={initialData?.authorName} required />
+              <label htmlFor="authorname">Author name *</label>
+              <input id="authorname" name="authorname" type="text" defaultValue={initialData?.authorname} required />
             </div>
             <div className="form-field">
               <label htmlFor="initials">Initials (avatar)</label>
@@ -109,8 +103,8 @@ export default function TestimonialForm({ initialData }: TestimonialFormProps) {
 
           <div className="form-row">
             <div className="form-field">
-              <label htmlFor="authorRole">Role</label>
-              <input id="authorRole" name="authorRole" type="text" defaultValue={initialData?.authorRole || ''} placeholder="Head of RevOps" />
+              <label htmlFor="authorrole">Role</label>
+              <input id="authorrole" name="authorrole" type="text" defaultValue={initialData?.authorrole || ''} placeholder="Head of RevOps" />
             </div>
             <div className="form-field">
               <label htmlFor="company">Company</label>
@@ -129,10 +123,10 @@ export default function TestimonialForm({ initialData }: TestimonialFormProps) {
             <h3 className="form-card-title">Publish</h3>
             <div className="form-field">
               <label htmlFor="status">Status</label>
-              <select id="status" name="status" defaultValue={initialData?.status ?? 'DRAFT'}>
-                <option value="DRAFT">Draft</option>
-                <option value="PUBLISHED">Published</option>
-                <option value="ARCHIVED">Archived</option>
+              <select id="status" name="status" defaultValue={initialData?.status ?? 'draft'}>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
               </select>
             </div>
             <div className="form-field">
@@ -144,11 +138,7 @@ export default function TestimonialForm({ initialData }: TestimonialFormProps) {
                 {loading ? 'Saving…' : isEditing ? 'Update' : 'Create'}
               </button>
               <button type="button" className="btn btn-ghost" onClick={() => router.back()}>Cancel</button>
-              {isEditing && (
-                <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
-                  Delete
-                </button>
-              )}
+              {/* Delete is handled from the testimonials list page via <DeleteButton />. */}
             </div>
           </div>
         </div>
@@ -170,8 +160,6 @@ export default function TestimonialForm({ initialData }: TestimonialFormProps) {
         .form-actions { display: flex; flex-direction: column; gap: 8px; }
         .form-actions .btn { width: 100%; text-align: center; }
         .form-actions .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-        .btn-danger:hover { background: #dc2626; color: white; }
       `}</style>
     </form>
   )

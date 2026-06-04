@@ -8,7 +8,7 @@ const updateSchema = z.object({
   name: z.string().min(1).optional(),
   email: z.string().email().optional(),
   password: z.string().min(8).optional(),
-  role: z.enum(['ADMIN', 'EDITOR', 'AUTHOR']).optional(),
+  role: z.enum(['admin', 'editor', 'author']).optional(),
   image: z.string().url().optional(),
 })
 
@@ -20,7 +20,7 @@ export async function GET(
     await requirePermission('manage:users')
     const { id } = await params
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id },
       select: {
         id: true,
@@ -28,8 +28,8 @@ export async function GET(
         email: true,
         role: true,
         image: true,
-        createdAt: true,
-        _count: { select: { blogs: true, useCases: true } },
+        createdat: true,
+        _count: { select: { blogs: true, usecases: true } },
       },
     })
 
@@ -68,7 +68,7 @@ export async function PUT(
       updateData.password = await bcrypt.hash(password, 12)
     }
 
-    const user = await prisma.user.update({
+    const user = await prisma.users.update({
       where: { id },
       data: updateData,
       select: {
@@ -77,7 +77,7 @@ export async function PUT(
         email: true,
         role: true,
         image: true,
-        createdAt: true,
+        createdat: true,
       },
     })
 
@@ -103,10 +103,26 @@ export async function DELETE(
       return Response.json({ success: false, error: 'Cannot delete your own account' }, { status: 400 })
     }
 
-    await prisma.user.delete({ where: { id } })
+    // Guard: MongoDB has no FK constraints — check manually before deleting
+    const [blogCount, usecaseCount] = await Promise.all([
+      prisma.blog.count({ where: { authorid: id } }),
+      prisma.usecase.count({ where: { authorid: id } }),
+    ])
+    if (blogCount > 0 || usecaseCount > 0) {
+      return Response.json(
+        {
+          success: false,
+          error: 'Cannot delete — this user still owns blogs or use cases. Reassign their content first.',
+        },
+        { status: 409 }
+      )
+    }
+
+    await prisma.users.delete({ where: { id } })
 
     return Response.json({ success: true, data: { deleted: true } })
   } catch (error: any) {
+    console.error('[DELETE /api/users/:id]', error)
     if (error.message === 'UNAUTHORIZED') {
       return Response.json({ success: false, error: 'Please log in' }, { status: 401 })
     }

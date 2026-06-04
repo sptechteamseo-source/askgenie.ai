@@ -103,7 +103,7 @@ export default function BlogPostClient({ blog, related }: BlogPostClientProps) {
               className="post2-category"
               href={blog.category ? `/blog/topic/${blog.category.slug}` : '/blog'}
             >
-              {blog.category ? blog.category.name : (blog.tag ?? 'Article')} · {blog.readMin} min read
+              {blog.category ? blog.category.name : (blog.tag ?? 'Article')} · {blog.readmin} min read
             </a>
 
             <h1 className="post2-title">{blog.title}</h1>
@@ -117,23 +117,23 @@ export default function BlogPostClient({ blog, related }: BlogPostClientProps) {
                 <span className="byline-avatar" aria-hidden="true">{initials}</span>
               )}
               <strong>{author.name}</strong>
-              {blog.publishedAt && (
+              {blog.publishedat && (
                 <>
                   <span className="sep">·</span>
-                  <time dateTime={blog.publishedAt}>{formatDate(blog.publishedAt)}</time>
+                  <time dateTime={blog.publishedat}>{formatDate(blog.publishedat)}</time>
                 </>
               )}
-              {blog.updatedAt !== blog.publishedAt && blog.publishedAt && (
+              {blog.updatedat !== blog.publishedat && blog.publishedat && (
                 <>
                   <span className="sep">·</span>
-                  <span>Updated <time dateTime={blog.updatedAt}>{formatDateShort(blog.updatedAt)}</time></span>
+                  <span>Updated <time dateTime={blog.updatedat}>{formatDateShort(blog.updatedat)}</time></span>
                 </>
               )}
             </div>
 
             <div className="post2-cover" role="img" aria-label={`Cover image for ${blog.title}`}>
-              {blog.coverImage ? (
-                <img src={blog.coverImage} alt={blog.title} className="post2-cover-img" />
+              {blog.coverimage ? (
+                <img src={blog.coverimage} alt={blog.title} className="post2-cover-img" />
               ) : (
                 <div className="ph" />
               )}
@@ -205,7 +205,7 @@ export default function BlogPostClient({ blog, related }: BlogPostClientProps) {
                 )}
                 <div className="author-info">
                   <h4>{author.name}</h4>
-                  {author.jobTitle && <div className="role">{author.jobTitle}</div>}
+                  {author.jobtitle && <div className="role">{author.jobtitle}</div>}
                   {author.bio && <p>{author.bio}</p>}
                 </div>
                 {(author.twitter || author.linkedin) && (
@@ -262,8 +262,8 @@ export default function BlogPostClient({ blog, related }: BlogPostClientProps) {
                 {related.map((p, i) => (
                   <article key={p.id} className="post-card">
                     <a href={`/blog/${p.slug}`} className="post-card-media" tabIndex={-1} aria-hidden="true">
-                      {p.coverImage ? (
-                        <img src={p.coverImage} alt={p.title} className="post-card-img" />
+                      {p.coverimage ? (
+                        <img src={p.coverimage} alt={p.title} className="post-card-img" />
                       ) : (
                         <div className={`ph ${PH_COLORS[i % PH_COLORS.length]}`} />
                       )}

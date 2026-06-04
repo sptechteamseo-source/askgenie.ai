@@ -16,24 +16,36 @@ export default function UseCases() {
         .usecases-grid { display: grid; grid-template-columns: 360px 1fr; gap: 16px; }
         @media (max-width: 900px) { .usecases-grid { grid-template-columns: 1fr; } }
         .usecases-tabs { display: flex; flex-direction: column; gap: 8px; }
+        @media (max-width: 640px) {
+          .usecases-head { margin-bottom: 32px; }
+          .usecases-tabs { flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 4px; scrollbar-width: none; }
+          .usecases-tabs::-webkit-scrollbar { display: none; }
+          .uc-tab { flex-shrink: 0; padding: 12px 14px; }
+          .uc-tab-meta { display: none; }
+          .uc-panel { padding: 20px 16px; }
+          .uc-title { font-size: 20px; }
+        }
         .uc-tab {
           display: flex; align-items: flex-start; gap: 14px; padding: 18px;
           border-radius: var(--radius-md); background: transparent;
           border: 1px solid var(--border); text-align: left;
-          transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+          transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform .2s var(--ease);
         }
-        .uc-tab:hover { background: var(--bg-elevated); }
-        .uc-tab.is-active { background: var(--bg-elevated); border-color: var(--accent); }
+        .uc-tab:hover { background: var(--bg-elevated); transform: translateX(3px); }
+        .uc-tab.is-active { background: var(--bg-elevated); border-color: var(--accent); transform: translateX(4px); }
         .uc-tab-icon {
           width: 34px; height: 34px; border-radius: 9px;
           background: var(--bg-sunken); display: inline-flex; align-items: center;
           justify-content: center; color: var(--fg-muted); flex-shrink: 0;
+          transition: background .25s, color .25s, transform .3s var(--ease);
         }
-        .uc-tab.is-active .uc-tab-icon { background: var(--accent-soft); color: var(--accent); }
+        .uc-tab.is-active .uc-tab-icon { background: var(--accent-soft); color: var(--accent); transform: scale(1.1); }
+        .uc-tab:hover .uc-tab-icon { transform: scale(1.06); }
         .uc-tab-meta { display: flex; flex-direction: column; gap: 4px; }
         .uc-tab-role { font-family: var(--font-label); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-subtle); }
         .uc-tab-title { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--fg); letter-spacing: -0.005em; line-height: 1.3; }
-        .uc-panel { padding: 32px; animation: fadeUp .35s var(--ease); }
+        @keyframes panelSlide { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .uc-panel { padding: 32px; animation: panelSlide .4s cubic-bezier(.2,0,0,1); }
         .uc-panel-head { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
         .uc-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; }
         .uc-title { font-family: var(--font-display); font-weight: 600; font-size: 24px; letter-spacing: -0.02em; margin-top: 2px; }
@@ -45,14 +57,14 @@ export default function UseCases() {
 
       <section id="usecases" className="usecases">
         <div className="container">
-          <div className="usecases-head">
+          <div className="usecases-head" data-reveal="fade-up">
             <span className="eyebrow">Use cases</span>
             <h2 className="section-title">
               Built for the teams that <em>need to know</em>.
             </h2>
           </div>
 
-          <div className="usecases-grid">
+          <div className="usecases-grid" data-reveal="fade-up" style={{'--reveal-delay':'80ms'} as any}>
             <div className="usecases-tabs">
               {PERSONAS.map((p2, i) => {
                 const TabIcon = Icons[p2.icon]

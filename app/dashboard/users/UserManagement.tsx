@@ -2,35 +2,36 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import DeleteButton from '@/components/dashboard/DeleteButton'
 
 interface User {
   id: string
   name: string
   email: string
   role: string
-  createdAt: Date
-  _count: { blogs: number; useCases: number }
+  createdat: Date
+  _count: { blogs: number; usecases: number }
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  ADMIN: '#7c3aed',
-  EDITOR: '#2563eb',
-  AUTHOR: '#059669',
+  admin: '#7c3aed',
+  editor: '#2563eb',
+  author: '#059669',
 }
 
 export default function UserManagement({
-  users: initialUsers,
+  users,
   currentUserId,
 }: {
   users: User[]
   currentUserId: string
 }) {
   const router = useRouter()
-  const [users, setUsers] = useState(initialUsers)
   const [showForm, setShowForm] = useState(false)
-  const [editUser, setEditUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  // Per-row role-change error so we can surface failures
+  const [roleError, setRoleError] = useState<{ id: string; msg: string } | null>(null)
 
   async function handleCreateUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -45,46 +46,53 @@ export default function UserManagement({
       role: fd.get('role'),
     }
 
-    const res = await fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
 
-    const data = await res.json()
+      if (!res.ok && res.status >= 500) {
+        setError('Server error — please try again')
+        return
+      }
 
-    if (!data.success) {
-      setError(data.error)
+      const data = await res.json()
+      if (!data.success) {
+        setError(data.error || 'Could not create user')
+        return
+      }
+
+      setShowForm(false)
+      router.refresh()
+    } catch {
+      setError('Network error — please try again')
+    } finally {
       setLoading(false)
-      return
     }
-
-    setShowForm(false)
-    setLoading(false)
-    router.refresh()
   }
 
   async function handleRoleChange(userId: string, newRole: string) {
-    await fetch(`/api/users/${userId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: newRole }),
-    })
-    router.refresh()
-  }
+    setRoleError(null)
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole }),
+      })
 
-  async function handleDelete(userId: string) {
-    if (!confirm('Delete this user? This cannot be undone.')) return
-
-    const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' })
-    const data = await res.json()
-
-    if (!data.success) {
-      alert(data.error)
-      return
+      const data = await res.json()
+      if (!data.success) {
+        setRoleError({ id: userId, msg: data.error || 'Could not change role' })
+        // Refresh anyway to reset the dropdown to the actual DB value
+        router.refresh()
+        return
+      }
+      router.refresh()
+    } catch {
+      setRoleError({ id: userId, msg: 'Network error — please try again' })
     }
-
-    router.refresh()
   }
 
   return (
@@ -119,10 +127,10 @@ export default function UserManagement({
               </div>
               <div className="form-field">
                 <label>Role</label>
-                <select name="role" defaultValue="AUTHOR">
-                  <option value="AUTHOR">Author</option>
-                  <option value="EDITOR">Editor</option>
-                  <option value="ADMIN">Admin</option>
+                <select name="role" defaultValue="author">
+                  <option value="author">Author</option>
+                  <option value="editor">Editor</option>
+                  <option value="admin">Admin</option>
                 </select>
               </div>
             </div>
@@ -169,24 +177,22 @@ export default function UserManagement({
                     disabled={user.id === currentUserId}
                     className="role-select"
                   >
-                    <option value="AUTHOR">Author</option>
-                    <option value="EDITOR">Editor</option>
-                    <option value="ADMIN">Admin</option>
+                    <option value="author">Author</option>
+                    <option value="editor">Editor</option>
+                    <option value="admin">Admin</option>
                   </select>
+                  {roleError?.id === user.id && (
+                    <div className="role-err">{roleError.msg}</div>
+                  )}
                 </td>
                 <td>
                   {user._count.blogs} blog{user._count.blogs !== 1 ? 's' : ''},{' '}
-                  {user._count.useCases} use case{user._count.useCases !== 1 ? 's' : ''}
+                  {user._count.usecases} use case{user._count.usecases !== 1 ? 's' : ''}
                 </td>
-                <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                <td>{new Date(user.createdat).toLocaleDateString()}</td>
                 <td>
                   {user.id !== currentUserId && (
-                    <button
-                      className="action-btn action-btn--danger"
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      Remove
-                    </button>
+                    <DeleteButton id={user.id} apiPath="users" />
                   )}
                 </td>
               </tr>
@@ -207,9 +213,10 @@ export default function UserManagement({
         .form-field input, .form-field select, .role-select { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--fg); font-size: 0.875rem; font-family: inherit; outline: none; }
         .form-field input:focus, .role-select:focus { border-color: var(--accent); }
         .cms-error { padding: 10px 14px; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: var(--radius-sm); font-size: 0.875rem; }
-        .data-table-wrap { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-elevated); }
-        .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-        .data-table th { background: var(--bg-sunken); padding: 10px 16px; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fg-muted); border-bottom: 1px solid var(--border); }
+        .role-err { font-size: 0.72rem; color: #dc2626; margin-top: 4px; }
+        .data-table-wrap { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-elevated); overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; min-width: 480px; }
+        .data-table th { background: var(--bg-sunken); padding: 10px 16px; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fg-muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
         .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--fg); vertical-align: middle; }
         .data-table tr:last-child td { border-bottom: none; }
         .data-table tr:hover td { background: var(--bg-sunken); }
@@ -219,9 +226,13 @@ export default function UserManagement({
         .user-email { font-size: 0.75rem; color: var(--fg-muted); }
         .you-badge { font-size: 0.65rem; background: var(--accent-soft); color: var(--accent); padding: 1px 6px; border-radius: 999px; font-weight: 600; }
         .role-select { padding: 4px 8px; font-size: 0.8rem; }
-        .action-btn { padding: 4px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 500; cursor: pointer; border: none; transition: all var(--transition-fast); }
-        .action-btn--danger { background: #fef2f2; color: #dc2626; }
-        .action-btn--danger:hover { background: #dc2626; color: white; }
+        @media (max-width: 768px) {
+          .form-row { grid-template-columns: 1fr; }
+          .dash-content { padding: 16px !important; }
+        }
+        @media (max-width: 480px) {
+          .dash-content { padding: 12px !important; }
+        }
       `}</style>
     </div>
   )

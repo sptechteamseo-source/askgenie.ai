@@ -3,7 +3,7 @@ import type { UserRole } from '@/types'
 
 // Define what each role can do
 const permissions = {
-  ADMIN: [
+  admin: [
     'manage:users',
     'manage:roles',
     'manage:blogs',
@@ -13,14 +13,14 @@ const permissions = {
     'view:analytics',
     'manage:settings',
   ],
-  EDITOR: [
+  editor: [
     'manage:blogs',
     'manage:use-cases',
     'manage:testimonials',
     'publish:content',
     'view:analytics',
   ],
-  AUTHOR: [
+  author: [
     'create:blogs',
     'edit:own-blogs',
     'create:use-cases',
@@ -49,12 +49,12 @@ export async function requirePermission(permission: string) {
   return session
 }
 
-// Check if user can edit a resource (ADMIN/EDITOR can edit all, AUTHOR only their own)
+// Check if user can edit a resource (admin/editor can edit all, author only their own)
 export function canEdit(
   userRole: UserRole,
   userId: string,
   resourceAuthorId: string
 ): boolean {
-  if (userRole === 'ADMIN' || userRole === 'EDITOR') return true
+  if (userRole === 'admin' || userRole === 'editor') return true
   return userId === resourceAuthorId
 }

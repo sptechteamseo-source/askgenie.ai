@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <RobotCursor />
+          {/* <RobotCursor /> */}
           {children}
         </Providers>
       </body>

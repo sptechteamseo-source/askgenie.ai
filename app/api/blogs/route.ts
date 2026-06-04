@@ -8,15 +8,15 @@ const blogSchema = z.object({
   slug:           z.string().min(1, 'Slug is required'),
   excerpt:        z.string().optional(),
   content:        z.string().min(1, 'Content is required'),
-  coverImage:     z.string().optional(),
-  ogImage:        z.string().optional(),
-  seoTitle:       z.string().optional(),
-  seoDescription: z.string().optional(),
+  coverimage:     z.string().optional(),
+  ogimage:        z.string().optional(),
+  seotitle:       z.string().optional(),
+  seodescription: z.string().optional(),
   faq:            z.array(z.object({ q: z.string(), a: z.string() })).optional(),
   tag:            z.string().optional(),
-  status:         z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
-  readMin:        z.number().min(1).default(5),
-  categoryId:     z.string().optional(),
+  status:         z.enum(['draft', 'published', 'archived']).default('draft'),
+  readmin:        z.number().min(1).default(5),
+  categoryid:     z.string().optional(),
 })
 
 // GET /api/blogs
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         author:   { select: { id: true, name: true, email: true } },
         category: { select: { id: true, name: true, slug: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdat: 'desc' },
     })
 
     return Response.json({ success: true, data: blogs })
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/blogs — create blog (ADMIN or EDITOR)
+// POST /api/blogs — create blog (admin or editor)
 export async function POST(request: NextRequest) {
   try {
     const session = await requirePermission('manage:blogs')
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const d = parsed.data
-    const publishedAt = d.status === 'PUBLISHED' ? new Date() : undefined
+    const publishedat = d.status === 'published' ? new Date() : undefined
 
     const blog = await prisma.blog.create({
       data: {
@@ -70,14 +70,14 @@ export async function POST(request: NextRequest) {
         slug:           d.slug,
         excerpt:        d.excerpt        || undefined,
         content:        d.content,
-        coverImage:     d.coverImage     || undefined,
-        ogImage:        d.ogImage        || undefined,
-        seoTitle:       d.seoTitle       || undefined,
-        seoDescription: d.seoDescription || undefined,
+        coverimage:     d.coverimage     || undefined,
+        ogimage:        d.ogimage        || undefined,
+        seotitle:       d.seotitle       || undefined,
+        seodescription: d.seodescription || undefined,
         tag:            d.tag            || undefined,
         status:         d.status,
-        readMin:        d.readMin,
-        publishedAt,
+        readmin:        d.readmin,
+        publishedat,
 
         // ── JSON field — only set when non-empty ───────────────
         ...(d.faq && d.faq.length > 0 ? { faq: d.faq } : {}),
@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
         author: {
           connect: { id: session.user.id },
         },
-        ...(d.categoryId
-          ? { category: { connect: { id: d.categoryId } } }
+        ...(d.categoryid
+          ? { category: { connect: { id: d.categoryid } } }
           : {}
         ),
       },

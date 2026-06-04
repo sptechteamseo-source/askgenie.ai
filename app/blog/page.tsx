@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
 import CTA from '@/components/sections/CTA'
+import PageAnimations from '@/components/ui/PageAnimations'
 
 const FILTERS = ['All', 'Product', 'Engineering', 'Research', 'Customer stories', 'RevOps', 'Security', 'Changelog']
 
@@ -71,25 +72,25 @@ export default function BlogPage() {
   const searchRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
-    fetch('/api/blogs?status=PUBLISHED')
+    fetch('/api/blogs?status=published')
       .then((r) => r.json())
       .then((data: { success: boolean; data: Array<{
-        slug: string; coverImage?: string; tag?: string; title: string; excerpt?: string;
-        author: { name: string }; publishedAt?: string; createdAt: string; readMin: number
+        slug: string; coverimage?: string; tag?: string; title: string; excerpt?: string;
+        author: { name: string }; publishedat?: string; createdat: string; readmin: number
       }> }) => {
         if (data.success && data.data.length > 0) {
           const dbPosts: Post[] = data.data.map((blog, i) => ({
             href: `/blog/${blog.slug}`,
             ph: PH_COLORS[i % PH_COLORS.length],
-            coverImage: blog.coverImage ?? '',
+            coverImage: blog.coverimage ?? '',
             tag: blog.tag ?? 'General',
             title: blog.title,
             excerpt: blog.excerpt ?? '',
             initials: blog.author.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase(),
             author: blog.author.name,
-            date: blog.publishedAt ?? blog.createdAt,
-            dateLabel: new Date(blog.publishedAt ?? blog.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            readMin: blog.readMin,
+            date: blog.publishedat ?? blog.createdat,
+            dateLabel: new Date(blog.publishedat ?? blog.createdat).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            readMin: blog.readmin,
           }))
           setPosts(dbPosts)
         }
@@ -112,6 +113,7 @@ export default function BlogPage() {
 
   return (
     <>
+      <PageAnimations />
       <a href="#main" className="visually-hidden" style={{ position: 'absolute', left: '-9999px', top: 'auto' }}>Skip to main content</a>
       <Nav basePath="/" />
 
@@ -124,14 +126,14 @@ export default function BlogPage() {
             <div className="glow" />
           </div>
           <div className="container blog-hero-inner">
-            <span className="eyebrow">The Genie Blog · est. 2024</span>
-            <h1 id="blog-h1" className="blog-hero-title">
+            <span className="eyebrow hero-anim" style={{ animationDelay: '0ms' }}>The Genie Blog · est. 2024</span>
+            <h1 id="blog-h1" className="blog-hero-title hero-anim" style={{ animationDelay: '90ms' }}>
               Field notes on <em>grounded</em> AI for the modern company.
             </h1>
-            <p className="blog-hero-lede">
+            <p className="blog-hero-lede hero-anim" style={{ animationDelay: '190ms' }}>
               Stories, patterns and unhinged opinions on building AI that answers from your company's own work — connectors, retrieval, evals, change management, and what comes next.
             </p>
-            <div className="blog-hero-meta">
+            <div className="blog-hero-meta hero-anim" style={{ animationDelay: '280ms' }}>
               <span><strong style={{ color: 'var(--fg)' }}>142</strong> articles</span>
               <span className="dot" />
               <span>Updated weekly</span>
@@ -171,13 +173,12 @@ export default function BlogPage() {
           <div className="container">
             <div className="blog-eyebrow-row">
               <span className="eyebrow" id="featured-h">Featured</span>
-              <a className="view-all" href="/blog/featured">
-                All editor picks
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </a>
+             
+           
+
             </div>
 
-            <article className="featured">
+            <article className="featured" data-reveal="fade-up">
               <a className="featured-media" href="/blog/how-to-solve-information-overload-in-team-collaboration" aria-label="Read: How to solve information overload in team collaboration">
                 <div className="ph" role="img" aria-label="Illustration placeholder" />
                 <span className="ph-label">cover · information-overload.png</span>
@@ -217,16 +218,13 @@ export default function BlogPage() {
           <div className="container">
             <div className="blog-eyebrow-row">
               <span className="eyebrow" id="latest-h">Latest articles</span>
-              <a className="view-all" href="/blog/archive">
-                Browse archive
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </a>
+             
             </div>
 
             <div className="blog-layout">
               <div className="posts-grid">
-                {(activeFilter === 'All' ? posts : posts.filter(p => p.tag === activeFilter)).map((p) => (
-                  <article key={p.href} className="post-card">
+                {(activeFilter === 'All' ? posts : posts.filter(p => p.tag === activeFilter)).map((p, i) => (
+                  <article key={p.href} className="post-card post-card-stagger" style={{ '--card-delay': `${i * 55}ms` } as any}>
                     <a href={p.href} className="post-card-media" aria-hidden="true" tabIndex={-1}>
                       {p.coverImage ? (
                         <img src={p.coverImage} alt={p.title} className="post-card-img" />
@@ -257,7 +255,7 @@ export default function BlogPage() {
               </div>
 
               {/* ── SIDEBAR ── */}
-              <aside className="blog-sidebar" aria-label="Blog sidebar">
+              <aside className="blog-sidebar" aria-label="Blog sidebar" data-reveal="fade-left" style={{ '--reveal-delay': '120ms' } as any}>
                 <div className="side-newsletter">
                   <h3>The Genie, weekly.</h3>
                   <p>One article + one customer note + one engineering snippet. No tracking pixels. No &ldquo;limited-time offer&rdquo;.</p>
@@ -333,8 +331,8 @@ export default function BlogPage() {
               </a>
             </div>
             <div className="topics">
-              {TOPICS.map((t) => (
-                <a key={t.href} href={t.href} className="topic">
+              {TOPICS.map((t, i) => (
+                <a key={t.href} href={t.href} className="topic" data-reveal="pop" style={{ '--reveal-delay': `${i * 70}ms` } as any}>
                   <span className="topic-c">{t.count}</span>
                   <span className="topic-h">{t.title}</span>
                   <span className="topic-d">{t.desc}</span>

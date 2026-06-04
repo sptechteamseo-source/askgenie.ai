@@ -4,24 +4,24 @@ import { redirect } from 'next/navigation'
 import DashboardHeader from '@/components/dashboard/Header'
 import UserManagement from './UserManagement'
 
-// Only ADMIN can access this page
+// Only admin can access this page
 export default async function UsersPage() {
   const session = await auth()
 
-  if (session?.user?.role !== 'ADMIN') {
+  if (session?.user?.role !== 'admin') {
     redirect('/dashboard')
   }
 
-  const users = await prisma.user.findMany({
+  const users = await prisma.users.findMany({
     select: {
       id: true,
       name: true,
       email: true,
       role: true,
-      createdAt: true,
-      _count: { select: { blogs: true, useCases: true } },
+      createdat: true,
+      _count: { select: { blogs: true, usecases: true } },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdat: 'desc' },
   })
 
   return (
@@ -33,7 +33,11 @@ export default async function UsersPage() {
       <div className="dash-content">
         <UserManagement users={users} currentUserId={session.user.id} />
       </div>
-      <style>{`.dash-content { padding: 28px 32px; }`}</style>
+      <style>{`
+        .dash-content { padding: 28px 32px; }
+        @media (max-width: 768px) { .dash-content { padding: 16px; } }
+        @media (max-width: 480px) { .dash-content { padding: 12px; } }
+      `}</style>
     </>
   )
 }

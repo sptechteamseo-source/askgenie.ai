@@ -4,11 +4,11 @@ import { redirect } from 'next/navigation'
 import DashboardHeader from '@/components/dashboard/Header'
 import StatsCard from '@/components/dashboard/StatsCard'
 
-// Only ADMIN and EDITOR can view analytics
+// Only admin and editor can view analytics
 export default async function AnalyticsPage() {
   const session = await auth()
 
-  if (session?.user?.role === 'AUTHOR') {
+  if (session?.user?.role === 'author') {
     redirect('/dashboard')
   }
 
@@ -28,18 +28,18 @@ export default async function AnalyticsPage() {
     categoryCount,
   ] = await Promise.all([
     prisma.blog.count(),
-    prisma.useCase.count(),
+    prisma.usecase.count(),
     prisma.testimonial.count(),
-    prisma.blog.count({ where: { status: 'PUBLISHED' } }),
-    prisma.useCase.count({ where: { status: 'PUBLISHED' } }),
-    prisma.testimonial.count({ where: { status: 'PUBLISHED' } }),
-    prisma.blog.count({ where: { status: 'DRAFT' } }),
-    prisma.useCase.count({ where: { status: 'DRAFT' } }),
-    prisma.user.count({ where: { role: 'AUTHOR' } }),
-    prisma.user.count({ where: { role: 'EDITOR' } }),
-    prisma.user.count({ where: { role: 'ADMIN' } }),
-    prisma.blogTag.count(),
-    prisma.blogCategory.count(),
+    prisma.blog.count({ where: { status: 'published' } }),
+    prisma.usecase.count({ where: { status: 'published' } }),
+    prisma.testimonial.count({ where: { status: 'published' } }),
+    prisma.blog.count({ where: { status: 'draft' } }),
+    prisma.usecase.count({ where: { status: 'draft' } }),
+    prisma.users.count({ where: { role: 'author' } }),
+    prisma.users.count({ where: { role: 'editor' } }),
+    prisma.users.count({ where: { role: 'admin' } }),
+    prisma.blogtag.count(),
+    prisma.blogcategory.count(),
   ])
 
   // Get recent 6 months data for chart
@@ -49,9 +49,9 @@ export default async function AnalyticsPage() {
   sixMonthsAgo.setHours(0, 0, 0, 0)
 
   const recentContent = await prisma.blog.findMany({
-    where: { createdAt: { gte: sixMonthsAgo } },
-    select: { createdAt: true },
-    orderBy: { createdAt: 'asc' },
+    where: { createdat: { gte: sixMonthsAgo } },
+    select: { createdat: true },
+    orderBy: { createdat: 'asc' },
   })
 
   // Group by month
@@ -63,7 +63,7 @@ export default async function AnalyticsPage() {
     monthlyMap[key] = 0
   }
   for (const item of recentContent) {
-    const key = new Date(item.createdAt).toLocaleString('default', { month: 'short' })
+    const key = new Date(item.createdat).toLocaleString('default', { month: 'short' })
     if (key in monthlyMap) monthlyMap[key]++
   }
 
@@ -151,6 +151,21 @@ export default async function AnalyticsPage() {
         .dash-section-title { font-size: 0.95rem; font-weight: 600; color: var(--fg); text-transform: uppercase; letter-spacing: 0.04em; }
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .stats-grid--3 { grid-template-columns: repeat(3, 1fr); }
+        @media (max-width: 900px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr); }
+          .stats-grid--3 { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+          .dash-content { padding: 16px; gap: 20px; }
+          .breakdown-label { min-width: 120px; font-size: 0.8rem; }
+        }
+        @media (max-width: 480px) {
+          .dash-content { padding: 12px; }
+          .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+          .stats-grid--3 { grid-template-columns: 1fr 1fr; }
+          .breakdown-row { flex-wrap: wrap; }
+          .breakdown-label { min-width: 100%; }
+        }
         .chart-card {
           background: var(--bg-elevated);
           border: 1px solid var(--border);

@@ -5,12 +5,12 @@ import { z } from 'zod'
 
 const updateSchema = z.object({
   quote: z.string().min(1).optional(),
-  authorName: z.string().min(1).optional(),
-  authorRole: z.string().optional(),
+  authorname: z.string().min(1).optional(),
+  authorrole: z.string().optional(),
   company: z.string().optional(),
   initials: z.string().max(3).optional(),
   seats: z.string().optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
+  status: z.enum(['draft', 'published', 'archived']).optional(),
   order: z.number().optional(),
 })
 
@@ -27,7 +27,8 @@ export async function GET(
     }
 
     return Response.json({ success: true, data: testimonial })
-  } catch {
+  } catch (error) {
+    console.error('[GET /api/testimonials/:id]', error)
     return Response.json({ success: false, error: 'Failed to fetch testimonial' }, { status: 500 })
   }
 }
@@ -68,7 +69,7 @@ export async function DELETE(
     const session = await requirePermission('manage:testimonials')
     const { id } = await params
 
-    if (session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'admin') {
       return Response.json({ success: false, error: 'Only admins can delete' }, { status: 403 })
     }
 

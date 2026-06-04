@@ -8,67 +8,67 @@ export async function GET() {
 
     // Run all count queries in parallel for speed
     const [
-      totalBlogs,
-      totalUseCases,
-      totalTestimonials,
-      totalAuthors,
-      publishedBlogs,
-      publishedUseCases,
-      draftBlogs,
-      draftUseCases,
-      recentBlogs,
-      recentUseCases,
+      totalblogs,
+      totalusecases,
+      totaltestimonials,
+      totalauthors,
+      publishedblogs,
+      publishedusecases,
+      draftblogs,
+      draftusecases,
+      recentblogs,
+      recentusecases,
     ] = await Promise.all([
       prisma.blog.count(),
-      prisma.useCase.count(),
+      prisma.usecase.count(),
       prisma.testimonial.count(),
-      prisma.user.count({ where: { role: 'AUTHOR' } }),
-      prisma.blog.count({ where: { status: 'PUBLISHED' } }),
-      prisma.useCase.count({ where: { status: 'PUBLISHED' } }),
-      prisma.blog.count({ where: { status: 'DRAFT' } }),
-      prisma.useCase.count({ where: { status: 'DRAFT' } }),
+      prisma.users.count({ where: { role: 'author' } }),
+      prisma.blog.count({ where: { status: 'published' } }),
+      prisma.usecase.count({ where: { status: 'published' } }),
+      prisma.blog.count({ where: { status: 'draft' } }),
+      prisma.usecase.count({ where: { status: 'draft' } }),
 
       // Last 6 months of blog activity
       prisma.blog.findMany({
         where: {
-          createdAt: {
+          createdat: {
             gte: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
           },
         },
-        select: { createdAt: true, status: true },
-        orderBy: { createdAt: 'asc' },
+        select: { createdat: true, status: true },
+        orderBy: { createdat: 'asc' },
       }),
 
       // Last 6 months of use case activity
-      prisma.useCase.findMany({
+      prisma.usecase.findMany({
         where: {
-          createdAt: {
+          createdat: {
             gte: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
           },
         },
-        select: { createdAt: true, status: true },
-        orderBy: { createdAt: 'asc' },
+        select: { createdat: true, status: true },
+        orderBy: { createdat: 'asc' },
       }),
     ])
 
     // Build monthly activity chart data
-    const monthlyActivity = buildMonthlyData([...recentBlogs, ...recentUseCases])
+    const monthlyActivity = buildMonthlyData([...recentblogs, ...recentusecases])
 
     return Response.json({
       success: true,
       data: {
         stats: {
-          totalBlogs,
-          totalUseCases,
-          totalTestimonials,
-          totalAuthors,
-          publishedContent: publishedBlogs + publishedUseCases,
-          draftContent: draftBlogs + draftUseCases,
+          totalblogs,
+          totalusecases,
+          totaltestimonials,
+          totalauthors,
+          publishedcontent: publishedblogs + publishedusecases,
+          draftcontent: draftblogs + draftusecases,
         },
         charts: {
           publishedVsDraft: [
-            { label: 'Published', value: publishedBlogs + publishedUseCases },
-            { label: 'Draft', value: draftBlogs + draftUseCases },
+            { label: 'Published', value: publishedblogs + publishedusecases },
+            { label: 'Draft', value: draftblogs + draftusecases },
           ],
           monthlyActivity,
         },
@@ -83,7 +83,7 @@ export async function GET() {
 }
 
 // Group items by month (last 6 months)
-function buildMonthlyData(items: { createdAt: Date }[]) {
+function buildMonthlyData(items: { createdat: Date }[]) {
   const months: Record<string, number> = {}
 
   // Pre-populate last 6 months with 0
@@ -96,7 +96,7 @@ function buildMonthlyData(items: { createdAt: Date }[]) {
 
   // Count items per month
   for (const item of items) {
-    const key = new Date(item.createdAt).toLocaleString('default', {
+    const key = new Date(item.createdat).toLocaleString('default', {
       month: 'short',
       year: '2-digit',
     })

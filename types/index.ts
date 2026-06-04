@@ -1,7 +1,7 @@
 // ─── Shared types used across the app ────────────────────────────────────────
 
-export type UserRole = 'ADMIN' | 'EDITOR' | 'AUTHOR'
-export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+export type UserRole = 'admin' | 'editor' | 'author'
+export type ContentStatus = 'draft' | 'published' | 'archived'
 
 // Extend NextAuth session to include role and id
 declare module 'next-auth' {
@@ -30,12 +30,12 @@ export type BlogWithAuthor = {
   title: string
   slug: string
   excerpt: string | null
-  coverImage: string | null
+  coverimage: string | null
   tag: string | null
   status: ContentStatus
-  readMin: number
-  publishedAt: Date | null
-  createdAt: Date
+  readmin: number
+  publishedat: Date | null
+  createdat: Date
   author: {
     id: string
     name: string
@@ -53,10 +53,10 @@ export type UseCaseWithAuthor = {
   excerpt: string | null
   metric: string | null
   industry: string | null
-  teamType: string | null
+  teamtype: string | null
   status: ContentStatus
-  publishedAt: Date | null
-  createdAt: Date
+  publishedat: Date | null
+  createdat: Date
   author: {
     id: string
     name: string
@@ -69,25 +69,25 @@ export type UseCaseWithAuthor = {
 export type TestimonialItem = {
   id: string
   quote: string
-  authorName: string
-  authorRole: string | null
+  authorname: string
+  authorrole: string | null
   company: string | null
   initials: string | null
   seats: string | null
   status: ContentStatus
   order: number
-  createdAt: Date
+  createdat: Date
 }
 
 // ─── Dashboard Stats ──────────────────────────────────────────────────────────
 
 export type DashboardStats = {
-  totalBlogs: number
-  totalUseCases: number
-  totalTestimonials: number
-  totalAuthors: number
-  publishedContent: number
-  draftContent: number
+  totalblogs: number
+  totalusecases: number
+  totaltestimonials: number
+  totalauthors: number
+  publishedcontent: number
+  draftcontent: number
 }
 
 // ─── API Response helper ──────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ export interface SerializedAuthor {
   name: string
   image: string | null
   bio: string | null
-  jobTitle: string | null
+  jobtitle: string | null
   twitter: string | null
   linkedin: string | null
 }
@@ -120,8 +120,8 @@ export interface SerializedCategory {
 }
 
 export interface SerializedTagEntry {
-  blogId: string
-  tagId: string
+  blogid: string
+  tagid: string
   tag: { id: string; name: string; slug: string }
 }
 
@@ -131,17 +131,17 @@ export interface SerializedBlog {
   slug: string
   excerpt: string | null
   content: string
-  coverImage: string | null
-  ogImage: string | null
-  seoTitle: string | null
-  seoDescription: string | null
+  coverimage: string | null
+  ogimage: string | null
+  seotitle: string | null
+  seodescription: string | null
   faq: FaqItem[]
   tag: string | null
   status: string
-  readMin: number
-  publishedAt: string | null
-  updatedAt: string
-  createdAt: string
+  readmin: number
+  publishedat: string | null
+  updatedat: string
+  createdat: string
   author: SerializedAuthor
   category: SerializedCategory | null
   tags: SerializedTagEntry[]
@@ -153,7 +153,7 @@ export interface RelatedPost {
   slug: string
   excerpt: string | null
   tag: string | null
-  coverImage: string | null
-  readMin: number
+  coverimage: string | null
+  readmin: number
   author: { name: string }
 }

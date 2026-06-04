@@ -9,15 +9,15 @@ const updateSchema = z.object({
   slug:           z.string().min(1).optional(),
   excerpt:        z.string().optional(),
   content:        z.string().optional(),
-  coverImage:     z.string().optional(),
-  ogImage:        z.string().optional(),
-  seoTitle:       z.string().optional(),
-  seoDescription: z.string().optional(),
+  coverimage:     z.string().optional(),
+  ogimage:        z.string().optional(),
+  seotitle:       z.string().optional(),
+  seodescription: z.string().optional(),
   faq:            z.array(z.object({ q: z.string(), a: z.string() })).optional(),
   tag:            z.string().optional(),
-  status:         z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
-  readMin:        z.number().min(1).optional(),
-  categoryId:     z.string().optional(),
+  status:         z.enum(['draft', 'published', 'archived']).optional(),
+  readmin:        z.number().min(1).optional(),
+  categoryid:     z.string().optional(),
 })
 
 // GET /api/blogs/:id — fetch single blog by ID
@@ -62,8 +62,8 @@ export async function PUT(
       return Response.json({ success: false, error: 'Blog not found' }, { status: 404 })
     }
 
-    // ADMIN/EDITOR can edit all, AUTHOR can only edit their own
-    if (!canEdit(session.user.role as any, session.user.id, blog.authorId)) {
+    // admin/editor can edit all, author can only edit their own
+    if (!canEdit(session.user.role as any, session.user.id, blog.authorid)) {
       return Response.json({ success: false, error: 'Not allowed' }, { status: 403 })
     }
 
@@ -79,9 +79,9 @@ export async function PUT(
 
     const d = parsed.data
 
-    // Set publishedAt only the first time the post is published
-    const publishedAt =
-      d.status === 'PUBLISHED' && !blog.publishedAt ? new Date() : undefined
+    // Set publishedat only the first time the post is published
+    const publishedat =
+      d.status === 'published' && !blog.publishedat ? new Date() : undefined
 
     // Build update payload explicitly — same approach as create.
     // We only include fields that were sent (undefined = don't touch).
@@ -92,18 +92,18 @@ export async function PUT(
     if (d.slug           !== undefined) updateData.slug           = d.slug
     if (d.content        !== undefined) updateData.content        = d.content
     if (d.status         !== undefined) updateData.status         = d.status
-    if (d.readMin        !== undefined) updateData.readMin        = d.readMin
+    if (d.readmin        !== undefined) updateData.readmin        = d.readmin
     if (d.excerpt        !== undefined) updateData.excerpt        = d.excerpt        || null
-    if (d.coverImage     !== undefined) updateData.coverImage     = d.coverImage     || null
-    if (d.ogImage        !== undefined) updateData.ogImage        = d.ogImage        || null
-    if (d.seoTitle       !== undefined) updateData.seoTitle       = d.seoTitle       || null
-    if (d.seoDescription !== undefined) updateData.seoDescription = d.seoDescription || null
+    if (d.coverimage     !== undefined) updateData.coverimage     = d.coverimage     || null
+    if (d.ogimage        !== undefined) updateData.ogimage        = d.ogimage        || null
+    if (d.seotitle       !== undefined) updateData.seotitle       = d.seotitle       || null
+    if (d.seodescription !== undefined) updateData.seodescription = d.seodescription || null
     if (d.tag            !== undefined) updateData.tag            = d.tag            || null
 
     // Category — relation syntax required by Prisma v7 PrismaPg adapter
-    if (d.categoryId !== undefined) {
-      updateData.category = d.categoryId
-        ? { connect: { id: d.categoryId } }
+    if (d.categoryid !== undefined) {
+      updateData.category = d.categoryid
+        ? { connect: { id: d.categoryid } }
         : { disconnect: true }
     }
 
@@ -112,7 +112,7 @@ export async function PUT(
       updateData.faq = d.faq.length > 0 ? d.faq : null
     }
 
-    if (publishedAt) updateData.publishedAt = publishedAt
+    if (publishedat) updateData.publishedat = publishedat
 
     const updated = await prisma.blog.update({
       where: { id },
@@ -135,7 +135,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/blogs/:id — delete blog (ADMIN only)
+// DELETE /api/blogs/:id — delete blog (admin only)
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -144,7 +144,7 @@ export async function DELETE(
     const session = await requirePermission('manage:blogs')
     const { id }  = await params
 
-    if (session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'admin') {
       return Response.json({ success: false, error: 'Only admins can delete' }, { status: 403 })
     }
 

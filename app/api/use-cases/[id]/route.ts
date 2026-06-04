@@ -9,10 +9,11 @@ const updateSchema = z.object({
   persona: z.string().optional(),
   excerpt: z.string().optional(),
   content: z.string().optional(),
+  pagedata: z.any().optional(),
   metric: z.string().optional(),
   industry: z.string().optional(),
-  teamType: z.string().optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
+  teamtype: z.string().optional(),
+  status: z.enum(['draft', 'published', 'archived']).optional(),
 })
 
 export async function GET(
@@ -21,7 +22,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const useCase = await prisma.useCase.findUnique({
+    const useCase = await prisma.usecase.findUnique({
       where: { id },
       include: { author: { select: { id: true, name: true, email: true } } },
     })
@@ -31,7 +32,8 @@ export async function GET(
     }
 
     return Response.json({ success: true, data: useCase })
-  } catch {
+  } catch (error) {
+    console.error('[GET /api/use-cases/:id]', error)
     return Response.json({ success: false, error: 'Failed to fetch use case' }, { status: 500 })
   }
 }
@@ -44,12 +46,12 @@ export async function PUT(
     const session = await requirePermission('manage:use-cases')
     const { id } = await params
 
-    const useCase = await prisma.useCase.findUnique({ where: { id } })
+    const useCase = await prisma.usecase.findUnique({ where: { id } })
     if (!useCase) {
       return Response.json({ success: false, error: 'Not found' }, { status: 404 })
     }
 
-    if (!canEdit(session.user.role as any, session.user.id, useCase.authorId)) {
+    if (!canEdit(session.user.role as any, session.user.id, useCase.authorid)) {
       return Response.json({ success: false, error: 'Not allowed' }, { status: 403 })
     }
 
@@ -60,11 +62,11 @@ export async function PUT(
     }
 
     const data = parsed.data
-    const publishedAt = data.status === 'PUBLISHED' && !useCase.publishedAt ? new Date() : undefined
+    const publishedat = data.status === 'published' && !useCase.publishedat ? new Date() : undefined
 
-    const updated = await prisma.useCase.update({
+    const updated = await prisma.usecase.update({
       where: { id },
-      data: { ...data, ...(publishedAt ? { publishedAt } : {}) },
+      data: { ...data, ...(publishedat ? { publishedat } : {}) },
       include: { author: { select: { id: true, name: true, email: true } } },
     })
 
@@ -85,11 +87,11 @@ export async function DELETE(
     const session = await requirePermission('manage:use-cases')
     const { id } = await params
 
-    if (session.user.role !== 'ADMIN') {
+    if (session.user.role !== 'admin') {
       return Response.json({ success: false, error: 'Only admins can delete' }, { status: 403 })
     }
 
-    await prisma.useCase.delete({ where: { id } })
+    await prisma.usecase.delete({ where: { id } })
 
     return Response.json({ success: true, data: { deleted: true } })
   } catch (error: any) {

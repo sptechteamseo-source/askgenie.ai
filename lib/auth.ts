@@ -27,7 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const { email, password } = parsed.data
 
         // Find user in database
-        const user = await prisma.user.findUnique({ where: { email } })
+        const user = await prisma.users.findUnique({ where: { email } })
         if (!user) return null
 
         // Check password
@@ -49,20 +49,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
 
   callbacks: {
-    // Put role into the JWT token
+    // Put role into the JWT token + self-heal stale tokens
     async jwt({ token, user }) {
+      // First sign-in: copy user fields onto the token
       if (user) {
         token.id = user.id as string
-        token.role = (user as any).role as string
+        token.role = String((user as any).role || '').toLowerCase()
+        return token
       }
+
+      // Subsequent requests: re-validate the user still exists in DB,
+      // and lowercase any legacy uppercase role we still have on the token.
+      // Returning {} on a missing user invalidates the session — NextAuth will
+      // treat it as unauthenticated and protected pages will redirect to /login.
+      if (token.id) {
+        const dbUser = await prisma.users.findUnique({
+          where: { id: token.id as string },
+          select: { id: true, role: true },
+        })
+
+        // User no longer exists (e.g. deleted, or wiped after a force-reset).
+        // Invalidate the JWT — clients with stale cookies will be bounced cleanly.
+        if (!dbUser) return {}
+
+        // Refresh role from DB and normalise to lowercase.
+        token.role = String(dbUser.role || '').toLowerCase()
+      }
+
       return token
     },
 
     // Put role into the session so client can read it
     async session({ session, token }) {
-      if (token) {
+      if (token && token.id) {
         ;(session.user as any).id = token.id
-        ;(session.user as any).role = token.role
+        ;(session.user as any).role = String(token.role || '').toLowerCase()
       }
       return session
     },

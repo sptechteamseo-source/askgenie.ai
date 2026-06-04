@@ -4,7 +4,7 @@ import BlogForm from '../BlogForm'
 
 export default async function NewBlogPage() {
   // Load categories for the dropdown
-  const categories = await prisma.blogCategory.findMany({
+  const categories = await prisma.blogcategory.findMany({
     orderBy: { name: 'asc' },
   })
 

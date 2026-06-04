@@ -254,7 +254,9 @@ export default function Hero() {
           display: grid; grid-template-columns: 1.05fr 1fr; gap: 64px;
           align-items: center; padding-top: 56px;
         }
-        @media (max-width: 1040px) { .hero-grid-layout { grid-template-columns: 1fr; gap: 40px; } }
+        @media (max-width: 1040px) {
+          .hero-grid-layout { grid-template-columns: 1fr; gap: 40px; }
+        }
         .hero-eyebrow {
           display: inline-flex; align-items: center; gap: 10px;
           font-family: var(--font-label); font-size: 12.5px; letter-spacing: .06em;
@@ -267,19 +269,59 @@ export default function Hero() {
         }
         .hero-title {
           font-family: var(--font-display); font-weight: 600;
-          font-size: clamp(44px, 5.6vw, 84px); line-height: .98;
+          font-size: clamp(36px, 5.6vw, 84px); line-height: .98;
           letter-spacing: -0.035em; margin: 22px 0; text-wrap: balance;
         }
         .hero-title em { font-style: normal; color: var(--accent); }
         .hero-lede {
-          font-size: clamp(16px, 1.35vw, 19px); line-height: 1.55;
+          font-size: clamp(15px, 1.35vw, 19px); line-height: 1.55;
           color: var(--fg-muted); max-width: 540px; text-wrap: pretty;
         }
         .hero-cta { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
-        .hero-trust { display: flex; align-items: center; gap: 14px; margin-top: 28px; color: var(--fg-subtle); font-size: 13px; }
+        .hero-trust { display: flex; align-items: center; gap: 14px; margin-top: 28px; color: var(--fg-subtle); font-size: 13px; flex-wrap: wrap; }
         .hero-avatars { display: flex; }
-        .hero-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg); margin-left: -8px; }
+        .hero-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg); margin-left: -8px; transition: transform .2s; }
         .hero-avatar:first-child { margin-left: 0; }
+        .hero-avatars:hover .hero-avatar { transform: translateY(-2px); }
+
+        /* ── Hero glow pulse ── */
+        @keyframes heroGlowBreath {
+          0%,100% { opacity:.7; transform:translateX(-50%) scale(1); }
+          50%      { opacity:1;  transform:translateX(-50%) scale(1.12); }
+        }
+        .hero-glow { animation: heroGlowBreath 6s ease-in-out infinite; }
+
+        /* ── Hero pin pulse ── */
+        @keyframes pinPulse {
+          0%,100% { box-shadow: 0 0 0 4px var(--accent-glow); }
+          50%      { box-shadow: 0 0 0 8px var(--accent-glow); }
+        }
+        .hero-pin { animation: pinPulse 2.5s ease-in-out infinite; }
+
+        /* ── Eyebrow badge hover ── */
+        .hero-eyebrow { transition: border-color .2s, background .2s; cursor: default; }
+        .hero-eyebrow:hover { border-color: color-mix(in oklab,var(--accent) 50%,transparent); background: var(--accent-soft); }
+
+        /* ── Demo card hover lift ── */
+        .hero-demo .ask { transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
+        .hero-demo .ask:hover { transform: translateY(-4px); box-shadow: 0 32px 80px -24px color-mix(in oklab,var(--accent) 22%,transparent), 0 0 0 1px var(--border) !important; }
+
+        /* ── CTA button glow ring ── */
+        .btn-accent { transition: box-shadow .25s var(--ease), transform .15s; }
+        .btn-accent:hover { box-shadow: 0 0 0 6px var(--accent-glow); }
+        .btn-accent:active { transform: translateY(1px); }
+
+        /* ── Mobile tweaks ─────────────────────────────── */
+        @media (max-width: 640px) {
+          .hero { padding-top: 32px; }
+          .hero-grid-layout { padding-top: 24px; gap: 28px; }
+          .hero-cta .btn { flex: 1; justify-content: center; min-width: 140px; }
+          .hero-eyebrow { font-size: 11px; }
+        }
+        @media (max-width: 400px) {
+          .hero-cta { flex-direction: column; }
+          .hero-cta .btn { width: 100%; justify-content: center; }
+        }
       `}</style>
 
       <section id="top" className="hero">
@@ -291,21 +333,21 @@ export default function Hero() {
         <div className="container">
           <div className="hero-grid-layout">
             <div className="hero-copy">
-              <div className="hero-eyebrow">
+              <div className="hero-eyebrow hero-anim" style={{ animationDelay: '0ms' }}>
                 <span className="hero-pin" />
                 The AI your company actually has the answers for
               </div>
-              <h1 className="hero-title">
+              <h1 className="hero-title hero-anim" style={{ animationDelay: '90ms' }}>
                 Ask anything.<br />
                 <em>Grounded</em> in everything<br />
                 your team knows.
               </h1>
-              <p className="hero-lede">
+              <p className="hero-lede hero-anim" style={{ animationDelay: '190ms' }}>
                 Connect Gmail, Drive, Salesforce, Notion, Fathom and 30+ more.
                 askthegenie reads what your company already wrote, then answers
                 with citations you can verify in one click.
               </p>
-              <div className="hero-cta">
+              <div className="hero-cta hero-anim" style={{ animationDelay: '290ms' }}>
                 <a href="https://app.askthegenie.ai/signup" className="btn btn-accent btn-lg">
                   Start free <Icons.arrowRight size={15} />
                 </a>
@@ -313,7 +355,7 @@ export default function Hero() {
                   <Icons.play size={13} /> Watch 90s demo
                 </button>
               </div>
-              <div className="hero-trust">
+              <div className="hero-trust hero-anim" style={{ animationDelay: '380ms' }}>
                 <div className="hero-avatars" aria-hidden="true">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <span
@@ -327,7 +369,7 @@ export default function Hero() {
               </div>
             </div>
 
-            <div className="hero-demo">
+            <div className="hero-demo hero-anim" style={{ animationDelay: '160ms' }}>
               <HeroAsk />
             </div>
           </div>

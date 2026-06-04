@@ -2,10 +2,23 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState, useMemo } from 'react'
 import { logout } from '@/app/actions/auth'
+import type { UserRole } from '@/types'
 
-// Navigation items — each has a path and an icon (inline SVG)
-const navItems = [
+interface NavItem {
+  href: string
+  label: string
+  exact?: boolean
+  /**
+   * If set, only users whose role is included may see this item.
+   * If omitted, the item is shown to everyone.
+   */
+  roles?: UserRole[]
+  icon: React.ReactNode
+}
+
+const navItems: NavItem[] = [
   {
     href: '/dashboard',
     exact: true,
@@ -46,6 +59,8 @@ const navItems = [
   {
     href: '/dashboard/testimonials',
     label: 'Testimonials',
+    // Authors don't manage testimonials (see lib/rbac.ts)
+    roles: ['admin', 'editor'],
     icon: (
       <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -55,6 +70,7 @@ const navItems = [
   {
     href: '/dashboard/categories',
     label: 'Categories',
+    roles: ['admin', 'editor'],
     icon: (
       <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
         <path d="M4 6h16M4 12h8M4 18h4" />
@@ -64,6 +80,7 @@ const navItems = [
   {
     href: '/dashboard/tags',
     label: 'Tags',
+    roles: ['admin', 'editor'],
     icon: (
       <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
         <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
@@ -74,6 +91,7 @@ const navItems = [
   {
     href: '/dashboard/users',
     label: 'Users',
+    roles: ['admin'],
     icon: (
       <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -84,11 +102,12 @@ const navItems = [
   {
     href: '/dashboard/analytics',
     label: 'Analytics',
+    roles: ['admin', 'editor'],
     icon: (
       <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
         <line x1="18" y1="20" x2="18" y2="10" />
         <line x1="12" y1="20" x2="12" y2="4" />
-        <line x1="6" y1="20" x2="6" y2="14" />
+        <line x1="6"  y1="20" x2="6"  y2="14" />
       </svg>
     ),
   },
@@ -105,6 +124,7 @@ const navItems = [
   {
     href: '/dashboard/settings',
     label: 'Settings',
+    roles: ['admin'],
     icon: (
       <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3" />
@@ -114,8 +134,41 @@ const navItems = [
   },
 ]
 
-export default function Sidebar() {
-  const pathname = usePathname()
+interface SidebarProps {
+  /** Current user's role — used to filter role-gated nav items. */
+  role?: UserRole
+}
+
+export default function Sidebar({ role }: SidebarProps) {
+  const pathname  = usePathname()
+  const [isOpen, setIsOpen] = useState(false)
+
+  // Filter nav items by role — only show items the user can actually access
+  const visibleItems = useMemo(() => {
+    return navItems.filter((item) => {
+      if (!item.roles) return true
+      if (!role) return false
+      return item.roles.includes(role)
+    })
+  }, [role])
+
+  // Close sidebar whenever route changes
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  // Listen to hamburger toggle event dispatched from Header
+  useEffect(() => {
+    const toggle = () => setIsOpen((prev) => !prev)
+    window.addEventListener('sidebar-toggle', toggle)
+    return () => window.removeEventListener('sidebar-toggle', toggle)
+  }, [])
+
+  // Lock body scroll when sidebar is open on mobile
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href
@@ -123,44 +176,66 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
-      {/* Logo */}
-      <div className="sidebar-logo">
-        <Link href="/" className="sidebar-logo-link">
-          askgenie.ai
-        </Link>
-        <span className="sidebar-badge">CMS</span>
-      </div>
+    <>
+      {/* Dark overlay behind sidebar on mobile */}
+      {isOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Navigation */}
-      <nav className="sidebar-nav">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`sidebar-item ${isActive(item.href, item.exact) ? 'sidebar-item--active' : ''}`}
+      <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
+        {/* Logo row + mobile close button */}
+        <div className="sidebar-logo">
+          <Link href="/" className="sidebar-logo-link">askgenie.ai</Link>
+          <span className="sidebar-badge">CMS</span>
+
+          {/* Close button — visible only on mobile */}
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setIsOpen(false)}
+            aria-label="Close menu"
           >
-            {item.icon}
-            <span>{item.label}</span>
-          </Link>
-        ))}
-      </nav>
-
-      {/* Logout button at the bottom */}
-      <div className="sidebar-footer">
-        <form action={logout}>
-          <button type="submit" className="sidebar-logout">
-            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
-            <span>Log out</span>
           </button>
-        </form>
-      </div>
+        </div>
+
+        {/* Navigation links */}
+        <nav className="sidebar-nav">
+          {visibleItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`sidebar-item ${isActive(item.href, item.exact) ? 'sidebar-item--active' : ''}`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Logout */}
+        <div className="sidebar-footer">
+          <form action={logout}>
+            <button type="submit" className="sidebar-logout">
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              <span>Log out</span>
+            </button>
+          </form>
+        </div>
+      </aside>
 
       <style>{`
+        /* ── Desktop sidebar ───────────────────────────────────── */
         .sidebar {
           width: 220px;
           min-height: 100vh;
@@ -172,8 +247,17 @@ export default function Sidebar() {
           position: fixed;
           top: 0;
           left: 0;
-          z-index: 50;
+          z-index: 200;
+          transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .sidebar-overlay {
+          display: none;
+        }
+        .sidebar-close-btn {
+          display: none;
+        }
+
+        /* ── Logo row ─────────────────────────────────────────── */
         .sidebar-logo {
           padding: 4px 20px 20px;
           display: flex;
@@ -198,12 +282,15 @@ export default function Sidebar() {
           border-radius: 999px;
           letter-spacing: 0.05em;
         }
+
+        /* ── Nav links ────────────────────────────────────────── */
         .sidebar-nav {
           display: flex;
           flex-direction: column;
           gap: 2px;
           padding: 0 10px;
           flex: 1;
+          overflow-y: auto;
         }
         .sidebar-item {
           display: flex;
@@ -225,6 +312,8 @@ export default function Sidebar() {
           background: var(--accent-soft);
           color: var(--accent);
         }
+
+        /* ── Footer / logout ──────────────────────────────────── */
         .sidebar-footer {
           padding: 12px 10px 0;
           border-top: 1px solid var(--border);
@@ -249,7 +338,46 @@ export default function Sidebar() {
           background: #fef2f2;
           color: #dc2626;
         }
+
+        /* ── Mobile ───────────────────────────────────────────── */
+        @media (max-width: 768px) {
+          .sidebar {
+            transform: translateX(-100%);
+            width: 260px;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+          }
+          .sidebar--open {
+            transform: translateX(0);
+          }
+          .sidebar-overlay {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.52);
+            backdrop-filter: blur(2px);
+            z-index: 199;
+            animation: fadeIn 0.2s ease;
+          }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+          .sidebar-close-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            color: var(--fg-muted);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition-fast);
+            flex-shrink: 0;
+          }
+          .sidebar-close-btn:hover { background: var(--bg-sunken); color: var(--fg); }
+        }
       `}</style>
-    </aside>
+    </>
   )
 }

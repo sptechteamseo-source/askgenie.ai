@@ -10,7 +10,7 @@ interface User {
   role: string
   image: string | null
   bio: string | null
-  jobTitle: string | null
+  jobtitle: string | null
   twitter: string | null
   linkedin: string | null
 }
@@ -27,23 +27,35 @@ export default function ProfileForm({ user }: { user: User }) {
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Upload avatar image
+  // Upload avatar image — generates a temp blob URL for preview, swaps to
+  // the real server URL on success, and always revokes the blob URL to
+  // avoid memory leaks.
   async function handleAvatarSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setAvatarPreview(URL.createObjectURL(file))
+    const tempUrl = URL.createObjectURL(file)
+    setAvatarPreview(tempUrl)
     setUploading(true)
     try {
       const fd = new FormData()
       fd.append('file', file)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      if (!res.ok && res.status >= 500) {
+        setError('Avatar upload failed — server error')
+        return
+      }
       const data = await res.json()
       if (data.success) {
         setAvatarUrl(data.url)
         setAvatarPreview(data.url)
+      } else {
+        setError(data.error || 'Avatar upload failed')
       }
+    } catch {
+      setError('Avatar upload failed — please try again')
     } finally {
       setUploading(false)
+      URL.revokeObjectURL(tempUrl)
     }
   }
 
@@ -57,26 +69,36 @@ export default function ProfileForm({ user }: { user: User }) {
     const body = {
       name:     fd.get('name') as string,
       bio:      fd.get('bio') as string,
-      jobTitle: fd.get('jobTitle') as string,
+      jobtitle: fd.get('jobtitle') as string,
       twitter:  fd.get('twitter') as string,
       linkedin: fd.get('linkedin') as string,
       image:    avatarUrl,
     }
 
-    const res = await fetch('/api/users/profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    const data = await res.json()
+    try {
+      const res = await fetch('/api/users/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
 
-    if (!data.success) {
-      setError(data.error || 'Failed to save')
-    } else {
-      setSuccess(true)
-      router.refresh()
+      if (!res.ok && res.status >= 500) {
+        setError('Server error — please try again')
+        return
+      }
+
+      const data = await res.json()
+      if (!data.success) {
+        setError(data.error || 'Failed to save')
+      } else {
+        setSuccess(true)
+        router.refresh()
+      }
+    } catch {
+      setError('Network error — please try again')
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
   }
 
   // Generate initials for avatar placeholder
@@ -129,10 +151,10 @@ export default function ProfileForm({ user }: { user: User }) {
             </div>
 
             <div className="form-field">
-              <label htmlFor="jobTitle">Job Title / Company</label>
+              <label htmlFor="jobtitle">Job Title / Company</label>
               <input
-                id="jobTitle" name="jobTitle" type="text"
-                defaultValue={user.jobTitle || ''}
+                id="jobtitle" name="jobtitle" type="text"
+                defaultValue={user.jobtitle || ''}
                 placeholder="e.g. Director of RevOps · Northwind Capital"
               />
               <span className="field-hint">Shown below your name on blog posts</span>

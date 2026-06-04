@@ -1,4 +1,4 @@
-﻿import { NextRequest } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requirePermission } from '@/lib/rbac'
 import bcrypt from 'bcryptjs'
@@ -8,27 +8,27 @@ const createUserSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['ADMIN', 'EDITOR', 'AUTHOR']).default('AUTHOR'),
+  role: z.enum(['admin', 'editor', 'author']).default('author'),
 })
 
-// GET /api/users â€” ADMIN only
+// GET /api/users — admin only
 export async function GET() {
   try {
     await requirePermission('manage:users')
 
-    const users = await prisma.user.findMany({
+    const users = await prisma.users.findMany({
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
         image: true,
-        createdAt: true,
+        createdat: true,
         _count: {
-          select: { blogs: true, useCases: true },
+          select: { blogs: true, usecases: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdat: 'desc' },
     })
 
     return Response.json({ success: true, data: users })
@@ -43,7 +43,7 @@ export async function GET() {
   }
 }
 
-// POST /api/users â€” create a new user (ADMIN only)
+// POST /api/users — create a new user (admin only)
 export async function POST(request: NextRequest) {
   try {
     await requirePermission('manage:users')
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     const { name, email, password, role } = parsed.data
 
     // Check if email is taken
-    const existing = await prisma.user.findUnique({ where: { email } })
+    const existing = await prisma.users.findUnique({ where: { email } })
     if (existing) {
       return Response.json({ success: false, error: 'Email already in use' }, { status: 409 })
     }
@@ -68,14 +68,14 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    const user = await prisma.user.create({
+    const user = await prisma.users.create({
       data: { name, email, password: hashedPassword, role },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        createdAt: true,
+        createdat: true,
       },
     })
 
@@ -87,4 +87,3 @@ export async function POST(request: NextRequest) {
     return Response.json({ success: false, error: 'Failed to create user' }, { status: 500 })
   }
 }
-

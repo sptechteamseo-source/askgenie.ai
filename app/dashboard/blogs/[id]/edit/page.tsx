@@ -12,7 +12,7 @@ export default async function EditBlogPage({
 
   const [blog, categories] = await Promise.all([
     prisma.blog.findUnique({ where: { id } }),
-    prisma.blogCategory.findMany({ orderBy: { name: 'asc' } }),
+    prisma.blogcategory.findMany({ orderBy: { name: 'asc' } }),
   ])
 
   if (!blog) notFound()
@@ -33,15 +33,15 @@ export default async function EditBlogPage({
             slug:           blog.slug,
             excerpt:        blog.excerpt,
             content:        blog.content,
-            coverImage:     blog.coverImage,
-            ogImage:        blog.ogImage,
-            seoTitle:       blog.seoTitle,
-            seoDescription: blog.seoDescription,
+            coverimage:     blog.coverimage,
+            ogimage:        blog.ogimage,
+            seotitle:       blog.seotitle,
+            seodescription: blog.seodescription,
             faq,
             tag:            blog.tag,
             status:         blog.status,
-            readMin:        blog.readMin,
-            categoryId:     blog.categoryId,
+            readmin:        blog.readmin,
+            categoryid:     blog.categoryid,
           }}
           categories={categories}
         />
