@@ -158,4 +158,4 @@ export async function resetPassword(formData: FormData) {
 
   redirect('https://askgenie-ai-inky.vercel.app/login?message=password-reset')
 }
-```
+
