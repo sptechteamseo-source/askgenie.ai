@@ -18,7 +18,7 @@ export async function login(formData: FormData) {
     await signIn('credentials', {
       email,
       password,
-      redirectTo: 'https://askgenie-ai-inky.vercel.app/dashboard'
+      redirectTo: 'https://askgenie-ai-inky.vercel.app/dashboard',
     })
   } catch (error: any) {
     if (error?.type === 'CredentialsSignin') {
@@ -44,13 +44,17 @@ export async function signup(formData: FormData) {
   }
 
   const parsed = signupSchema.safeParse(raw)
+
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message }
   }
 
   const { name, email, password } = parsed.data
 
-  const existing = await prisma.users.findUnique({ where: { email } })
+  const existing = await prisma.users.findUnique({
+    where: { email },
+  })
+
   if (existing) {
     return { error: 'An account with this email already exists' }
   }
@@ -69,7 +73,7 @@ export async function signup(formData: FormData) {
   await signIn('credentials', {
     email,
     password,
-    redirectTo: 'https://askgenie-ai-inky.vercel.app/dashboard'
+    redirectTo: 'https://askgenie-ai-inky.vercel.app/dashboard',
   })
 }
 
@@ -77,7 +81,7 @@ export async function signup(formData: FormData) {
 
 export async function logout() {
   await signOut({
-    redirectTo: 'https://askgenie-ai-inky.vercel.app/login'
+    redirectTo: 'https://askgenie-ai-inky.vercel.app/login',
   })
 }
 
@@ -86,9 +90,13 @@ export async function logout() {
 export async function forgotPassword(formData: FormData) {
   const email = formData.get('email') as string
 
-  if (!email) return { error: 'Email is required' }
+  if (!email) {
+    return { error: 'Email is required' }
+  }
 
-  const user = await prisma.users.findUnique({ where: { email } })
+  const user = await prisma.users.findUnique({
+    where: { email },
+  })
 
   if (!user) {
     return { success: true }
@@ -105,7 +113,7 @@ export async function forgotPassword(formData: FormData) {
     },
   })
 
-  console.log(`Reset link: /reset-password?token=${token}`)
+  console.log('Reset link generated')
 
   return { success: true }
 }
@@ -127,7 +135,9 @@ export async function resetPassword(formData: FormData) {
   const user = await prisma.users.findFirst({
     where: {
       resettoken: token,
-      resettokenexpiry: { gt: new Date() },
+      resettokenexpiry: {
+        gt: new Date(),
+      },
     },
   })
 
