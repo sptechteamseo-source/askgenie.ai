@@ -62,9 +62,15 @@ export async function signup(formData: FormData) {
   })
 
   // Auto sign in after signup
+  /*
   await signIn('credentials', { email, password, redirectTo: '/dashboard' })
 }
-
+*/
+  await signIn('credentials', {
+  email,
+  password,
+  redirectTo: 'https://askgenie-ai-inky.vercel.app/dashboard'
+})
 // ─── Logout ───────────────────────────────────────────────────────────────────
 
 export async function logout() {
