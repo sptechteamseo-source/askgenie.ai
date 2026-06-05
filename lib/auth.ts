@@ -58,22 +58,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token
       }
 
-      // Subsequent requests: re-validate the user still exists in DB,
-      // and lowercase any legacy uppercase role we still have on the token.
-      // Returning {} on a missing user invalidates the session — NextAuth will
-      // treat it as unauthenticated and protected pages will redirect to /login.
+      // Subsequent requests: re-validate the user still exists in DB.
+      // Wrapped in try/catch so a DB outage never crashes the session —
+      // if the query fails we keep the existing token rather than signing everyone out.
       if (token.id) {
-        const dbUser = await prisma.users.findUnique({
-          where: { id: token.id as string },
-          select: { id: true, role: true },
-        })
+        try {
+          const dbUser = await prisma.users.findUnique({
+            where: { id: token.id as string },
+            select: { id: true, role: true },
+          })
 
-        // User no longer exists (e.g. deleted, or wiped after a force-reset).
-        // Invalidate the JWT — clients with stale cookies will be bounced cleanly.
-        if (!dbUser) return {}
+          // User deleted — invalidate the JWT.
+          if (!dbUser) return {}
 
-        // Refresh role from DB and normalise to lowercase.
-        token.role = String(dbUser.role || '').toLowerCase()
+          // Refresh role from DB and normalise to lowercase.
+          token.role = String(dbUser.role || '').toLowerCase()
+        } catch {
+          // DB unreachable — keep existing token data so the session survives.
+        }
       }
 
       return token

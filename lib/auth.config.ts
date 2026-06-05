@@ -10,17 +10,23 @@ export const authConfig: NextAuthConfig = {
     error: '/login',
   },
   callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
+      if (isOnDashboard) return isLoggedIn
+      return true
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string
-        token.role = (user as any).role as string
+        token.role = String((user as any).role || '').toLowerCase()
       }
       return token
     },
     async session({ session, token }) {
       if (token) {
         ;(session.user as any).id = token.id
-        ;(session.user as any).role = token.role
+        ;(session.user as any).role = String(token.role || '').toLowerCase()
       }
       return session
     },

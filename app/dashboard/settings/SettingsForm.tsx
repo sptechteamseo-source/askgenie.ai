@@ -32,8 +32,8 @@ export default function SettingsForm({ currentUser }: SettingsFormProps) {
       email: fd.get('email') as string,
     }
 
-    const res = await fetch(`/api/users/${currentUser.id}`, {
-      method: 'PUT',
+    const res = await fetch('/api/users/profile', {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
@@ -65,10 +65,10 @@ export default function SettingsForm({ currentUser }: SettingsFormProps) {
 
     setLoading(true)
 
-    const res = await fetch(`/api/users/${currentUser.id}`, {
-      method: 'PUT',
+    const res = await fetch('/api/users/profile', {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: newPassword }),
+      body: JSON.stringify({ name: currentUser.name, password: newPassword }),
     })
 
     const data = await res.json()

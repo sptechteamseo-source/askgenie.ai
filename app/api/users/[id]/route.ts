@@ -9,7 +9,7 @@ const updateSchema = z.object({
   email: z.string().email().optional(),
   password: z.string().min(8).optional(),
   role: z.enum(['admin', 'editor', 'author']).optional(),
-  image: z.string().url().optional(),
+  image: z.string().optional(),
 })
 
 export async function GET(
