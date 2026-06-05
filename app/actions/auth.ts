@@ -66,11 +66,12 @@ export async function signup(formData: FormData) {
   await signIn('credentials', { email, password, redirectTo: '/dashboard' })
 }
 */
-  await signIn('credentials', {
+await signIn('credentials', {
   email,
   password,
   redirectTo: 'https://askgenie-ai-inky.vercel.app/dashboard'
 })
+}
 // ─── Logout ───────────────────────────────────────────────────────────────────
 
 export async function logout() {
