@@ -159,7 +159,7 @@ export default function BlogPostClient({ blog, related }: BlogPostClientProps) {
             )}
 
             <article className="prose2">
-              <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+              <div dangerouslySetInnerHTML={{ __html: contentHtml }} suppressHydrationWarning />
 
               {faqItems.length > 0 && (
                 <section className="post2-faq" id="faq" aria-labelledby="faq-h">

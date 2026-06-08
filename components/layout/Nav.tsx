@@ -54,6 +54,12 @@ const USE_CASE_LINKS = [
     title: 'Healthcare',
     desc:  'Clinical answers, policy lookup & compliance',
   },
+  {
+    href: '/use-cases/small-and-medium-business',
+    icon: '◑',
+    title: 'Small & Medium Business',
+    desc:  'One AI for your whole business — customers, ops & team knowledge',
+  },
 ]
 
 interface NavProps {
@@ -179,6 +185,15 @@ export default function Nav({ basePath = '' }: NavProps) {
           padding: 8px;
           z-index: 200;
           animation: ddIn 0.16s ease;
+        }
+        /* Transparent bridge spans the 8px gap so the cursor stays inside
+           .nav-dd when moving from the toggle button down to the menu. */
+        .nav-dd-menu::before {
+          content: '';
+          position: absolute;
+          top: -8px; left: 0; right: 0;
+          height: 8px;
+          background: transparent;
         }
         @keyframes ddIn {
           from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
@@ -338,6 +353,7 @@ export default function Nav({ basePath = '' }: NavProps) {
                 aria-haspopup="true"
                 aria-expanded={ddOpen}
                 onClick={() => setDdOpen((o) => !o)}
+                suppressHydrationWarning
               >
                 Use cases
                 <svg className="nav-dd-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -398,6 +414,7 @@ export default function Nav({ basePath = '' }: NavProps) {
               onClick={() => setMenuOpen((o) => !o)}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
+              suppressHydrationWarning
             >
               {menuOpen ? (
                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

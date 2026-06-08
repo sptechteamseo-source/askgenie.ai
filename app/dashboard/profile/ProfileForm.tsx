@@ -33,6 +33,8 @@ export default function ProfileForm({ user }: { user: User }) {
   async function handleAvatarSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const prevUrl = avatarUrl
+    const prevPreview = avatarPreview
     const tempUrl = URL.createObjectURL(file)
     setAvatarPreview(tempUrl)
     setUploading(true)
@@ -40,19 +42,19 @@ export default function ProfileForm({ user }: { user: User }) {
       const fd = new FormData()
       fd.append('file', file)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
-      if (!res.ok && res.status >= 500) {
-        setError('Avatar upload failed — server error')
-        return
-      }
       const data = await res.json()
       if (data.success) {
         setAvatarUrl(data.url)
         setAvatarPreview(data.url)
       } else {
         setError(data.error || 'Avatar upload failed')
+        setAvatarUrl(prevUrl)
+        setAvatarPreview(prevPreview)
       }
     } catch {
       setError('Avatar upload failed — please try again')
+      setAvatarUrl(prevUrl)
+      setAvatarPreview(prevPreview)
     } finally {
       setUploading(false)
       URL.revokeObjectURL(tempUrl)

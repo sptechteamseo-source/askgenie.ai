@@ -129,8 +129,8 @@ export default function BlogForm({ initialData, categories }: BlogFormProps) {
       slug:           text('slug')!,
       excerpt:        text('excerpt'),
       content:        text('content')!,
-      coverimage:     coverImage  || undefined,
-      ogimage:        ogImage     || undefined,
+      coverimage:     coverImage  || null,
+      ogimage:        ogImage     || null,
       seotitle:       text('seotitle'),
       seodescription: text('seodescription'),
       // Only include FAQ items that have a non-empty question

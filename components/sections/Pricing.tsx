@@ -26,8 +26,7 @@ export default function Pricing() {
           .tier-price-num { font-size: 40px; }
           .pricing-foot { flex-direction: column; text-align: center; font-size: 12px; }
         }
-        @keyframes featuredGlow { 0%,100%{box-shadow:0 30px 60px -30px var(--accent-glow)} 50%{box-shadow:0 40px 80px -20px var(--accent-glow)} }
-        .tier--featured { border-color: var(--accent); animation: featuredGlow 3.5s ease-in-out infinite; }
+        .tier--featured { border-color: var(--accent); box-shadow: 0 30px 60px -30px var(--accent-glow); }
         .tier-badge {
           position: absolute; top: -12px; left: 28px;
           padding: 5px 10px; border-radius: 9999px;

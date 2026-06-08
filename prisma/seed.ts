@@ -289,6 +289,43 @@ askgenie.ai connects to your support system, documentation, and Slack. When a ne
     },
   })
 
+  await prisma.usecase.upsert({
+    where: { slug: 'students' },
+    update: {},
+    create: {
+      title: 'Students',
+      slug: 'students',
+      persona: 'Research',
+      excerpt: 'Students get cited answers from their reading lists, lecture notes and papers — in seconds, not hours.',
+      content: `# Students
+
+Students spend hours hunting through PDFs, lecture slides and reading lists to find one fact. With askgenie.ai, any question about their coursework is answered instantly — with the exact source cited so they can verify and cite it themselves.
+
+## The problem
+
+A student preparing for an exam or writing an essay needs to:
+- Search dozens of PDFs for a specific argument
+- Cross-reference lecture notes with assigned readings
+- Find the original source behind a claim
+- Summarise a paper in minutes, not hours
+
+This can take a whole evening. With askgenie.ai, it takes seconds.
+
+## The result
+
+Students using askgenie.ai report:
+- 3× faster essay research
+- Better-quality citations from primary sources
+- More time for deep reading instead of hunting`,
+      metric: '3× faster research',
+      industry: 'Media',
+      teamtype: 'Research',
+      status: 'published',
+      publishedat: new Date(),
+      authorid: admin.id,
+    },
+  })
+
   console.log('✅ Created use cases')
 
   // ─── Testimonials ──────────────────────────────────────────────────────────

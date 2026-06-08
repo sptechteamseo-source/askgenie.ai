@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 /* ─── Types matching the use-case page sections ─── */
@@ -383,22 +383,12 @@ export default function UseCaseForm({ initialData }: Props) {
               ))}
 
               <div className="section-label" style={{ marginTop: 16 }}>Image beside content</div>
-              <div className="two-col">
-                <div className="ff">
-                  <label>Image path <span className="hint">(relative to /public)</span></label>
-                  <input value={row.img} onChange={e => setExplained(i, 'img', e.target.value)} placeholder="/images/marketing-how-it-works.png" />
-                </div>
-                <div className="ff">
-                  <label>Image alt text</label>
-                  <input value={row.imgAlt} onChange={e => setExplained(i, 'imgAlt', e.target.value)} placeholder="Descriptive alt text for accessibility" />
-                </div>
-              </div>
-              {row.img && (
-                <div className="img-preview">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={row.img} alt={row.imgAlt || ''} style={{ maxHeight: 180, maxWidth: '100%', borderRadius: 8, objectFit: 'contain', background: 'var(--bg-sunken)', padding: 8 }} />
-                </div>
-              )}
+              <InlineImageUpload
+                currentUrl={row.img}
+                altText={row.imgAlt}
+                onUpload={url => setExplained(i, 'img', url)}
+                onAltChange={alt => setExplained(i, 'imgAlt', alt)}
+              />
             </div>
           </details>
         ))}
@@ -755,7 +745,145 @@ export default function UseCaseForm({ initialData }: Props) {
         @media (max-width: 640px) {
           .tab-panel { padding: 16px 12px 120px; }
         }
+
+        /* ── Inline image upload (use-case explained rows) ── */
+        .uc-img-drop {
+          border: 2px dashed var(--border); border-radius: var(--radius-sm);
+          padding: 20px 14px; display: flex; flex-direction: column;
+          align-items: center; gap: 6px; cursor: pointer;
+          color: var(--fg-muted); text-align: center; font-size: 0.825rem;
+          transition: border-color 0.15s, background 0.15s;
+        }
+        .uc-img-drop:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, transparent); color: var(--fg); }
+        .uc-img-hint { font-size: 0.75rem; color: var(--fg-subtle); }
+        .uc-img-preview-wrap { position: relative; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+        .uc-img-preview { width: 100%; max-height: 200px; object-fit: contain; display: block; background: var(--bg-sunken); padding: 8px; box-sizing: border-box; }
+        .uc-img-badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; }
+        .uc-img-actions { display: flex; gap: 6px; padding: 8px; background: var(--bg-elevated); border-top: 1px solid var(--border); }
+        .uc-img-actions button { padding: 4px 10px; border-radius: var(--radius-sm); font-size: 0.78rem; font-weight: 500; border: 1px solid var(--border); background: var(--bg); color: var(--fg); cursor: pointer; transition: background 0.15s; }
+        .uc-img-actions button:hover { background: var(--bg-sunken); }
+        .uc-img-actions button:last-child:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+        .uc-img-error { font-size: 0.78rem; color: #dc2626; margin: 4px 0 0; }
       `}</style>
     </form>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   InlineImageUpload
+   Self-contained upload widget used inside the "Explained" accordion rows.
+   Manages its own uploading/error state; calls onUpload(url) on success.
+───────────────────────────────────────────────────────────────────────────── */
+function InlineImageUpload({
+  currentUrl,
+  altText,
+  onUpload,
+  onAltChange,
+}: {
+  currentUrl:  string
+  altText:     string
+  onUpload:    (url: string) => void
+  onAltChange: (alt: string) => void
+}) {
+  const [preview,   setPreview]   = useState(currentUrl)
+  const [uploading, setUploading] = useState(false)
+  const [error,     setError]     = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  // Keep local preview in sync when parent resets the value (e.g. on Remove)
+  useEffect(() => { setPreview(currentUrl) }, [currentUrl])
+
+  async function handleFile(file: File) {
+    // Client-side validation mirrors API-side rules
+    const ALLOWED = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (!ALLOWED.includes(file.type)) {
+      setError('Only JPG, PNG and WebP images are allowed')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be under 5 MB')
+      return
+    }
+
+    const tempUrl = URL.createObjectURL(file)
+    setPreview(tempUrl)
+    setError('')
+    setUploading(true)
+
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res  = await fetch('/api/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+
+      if (!data.success) {
+        setError(data.error || 'Upload failed')
+        setPreview(currentUrl)
+        return
+      }
+
+      // Persist the Cloudinary URL up to the form state
+      onUpload(data.url)
+      setPreview(data.url)
+    } catch {
+      setError('Upload failed — please try again')
+      setPreview(currentUrl)
+    } finally {
+      setUploading(false)
+      URL.revokeObjectURL(tempUrl)
+    }
+  }
+
+  function handleRemove() {
+    onUpload('')
+    setPreview('')
+    setError('')
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  return (
+    <div>
+      {/* Upload zone / image preview */}
+      {preview ? (
+        <div className="uc-img-preview-wrap">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={preview} alt={altText} className="uc-img-preview" />
+          {uploading && <span className="uc-img-badge">Uploading…</span>}
+          <div className="uc-img-actions">
+            <button type="button" onClick={() => fileRef.current?.click()}>Replace</button>
+            <button type="button" onClick={handleRemove}>Remove</button>
+          </div>
+        </div>
+      ) : (
+        <div className="uc-img-drop" onClick={() => fileRef.current?.click()}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
+          </svg>
+          <span>Click to upload image</span>
+          <span className="uc-img-hint">JPG, PNG, WebP · max 5 MB</span>
+        </div>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+        style={{ display: 'none' }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+      />
+
+      {error && <p className="uc-img-error">{error}</p>}
+
+      {/* Alt text field */}
+      <div className="ff" style={{ marginTop: 10 }}>
+        <label>Image alt text</label>
+        <input
+          value={altText}
+          onChange={e => onAltChange(e.target.value)}
+          placeholder="Descriptive alt text for accessibility"
+        />
+      </div>
+    </div>
   )
 }

@@ -2,6 +2,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// DATABASE_URL is read by the Prisma CLI (prisma generate, db push, studio).
+// At *runtime* the app resolves the connection via lib/prisma.ts which reads
+// process.env.MONGODB_URI first, then falls back to DATABASE_URL.
+// Set MONGODB_URI in Vercel environment variables for production deployments.
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")

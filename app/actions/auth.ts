@@ -66,7 +66,7 @@ export async function signup(formData: FormData) {
   await signIn('credentials', { email, password, redirectTo: '/dashboard' })
 }
 
-  
+
 // ─── Logout ───────────────────────────────────────────────────────────────────
 
 export async function logout() {
